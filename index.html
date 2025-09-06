@@ -908,17 +908,19 @@
             };
         }
 
-        function generateTicker(baseSymbol, id) {
-            const suffixes = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-            const numbers = ['', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            
-            if (id <= 100) return baseSymbol;
-            
-            const suffix = suffixes[id % suffixes.length];
-            const number = numbers[Math.floor(id / suffixes.length) % numbers.length];
-            
-            return baseSymbol + suffix + number;
-        }
+       function generateTicker(baseSymbol, id) {
+    // For first 50 stocks, use exact symbols
+    if (id <= 50) return baseSymbol;
+    
+    // For additional stocks, use simple variations
+    const variations = ['A', 'B', 'C', 'D', 'E'];
+    const variation = variations[id % variations.length];
+    
+    // Only add variation if really needed, prefer clean symbols
+    if (id <= 100) return baseSymbol;
+    return baseSymbol + variation;
+}
+
 
         function generatePrice(avgPrice, range) {
             // Use log-normal distribution for more realistic price distribution
