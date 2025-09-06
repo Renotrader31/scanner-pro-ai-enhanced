@@ -1,16 +1,10 @@
 {
   "version": 2,
-  "name": "scanner-pro-ai",
+  "name": "scanner-pro-ai-enhanced",
   "builds": [
     {
       "src": "index.html",
       "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
     }
   ],
   "headers": [
