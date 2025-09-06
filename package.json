@@ -1,0 +1,38 @@
+{
+  "name": "scanner-pro-ai",
+  "version": "2.0.0",
+  "description": "Professional stock scanner with AI-powered analysis and 4,500+ stocks",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve -s . -l 3000",
+    "build": "echo 'Static site - no build required'",
+    "dev": "serve -s . -l 3000",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "stock-scanner",
+    "trading",
+    "financial-analysis",
+    "ai-analysis",
+    "polygon-api",
+    "technical-analysis",
+    "market-data",
+    "fintech"
+  ],
+  "author": "Renotrader31",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Renotrader31/scanner-pro-ai.git"
+  },
+  "homepage": "https://github.com/Renotrader31/scanner-pro-ai#readme",
+  "bugs": {
+    "url": "https://github.com/Renotrader31/scanner-pro-ai/issues"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

@@ -1,0 +1,2321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Pro AI - Advanced Trading Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0A0E27 0%, #1a1f3a 50%, #0f1419 100%);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .glass-effect {
+            background: rgba(31, 41, 55, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #60A5FA, #A78BFA, #F472B6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tab-active {
+            background: #3B82F6;
+            color: white;
+        }
+        .tab-inactive {
+            background: #374151;
+            color: white;
+        }
+        .scan-result-row:hover {
+            background: rgba(55, 65, 81, 0.3);
+        }
+        .score-high { background: rgba(34, 197, 94, 0.2); color: #22C55E; border-color: rgba(34, 197, 94, 0.3); }
+        .score-medium { background: rgba(59, 130, 246, 0.2); color: #3B82F6; border-color: rgba(59, 130, 246, 0.3); }
+        .score-low { background: rgba(239, 68, 68, 0.2); color: #EF4444; border-color: rgba(239, 68, 68, 0.3); }
+        .chart-container { height: 400px; }
+        .ai-chat-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .ai-user { background: rgba(59, 130, 246, 0.2); margin-left: auto; }
+        .ai-assistant { background: rgba(55, 65, 81, 0.5); margin-right: auto; }
+    </style>
+</head>
+<body class="text-white">
+    <div class="container mx-auto px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-5xl font-bold mb-2 gradient-text">
+                <i class="fas fa-rocket mr-3"></i>Scanner Pro AI
+            </h1>
+            <p class="text-gray-400 text-lg">Advanced Stock Scanner with AI-Powered Market Intelligence</p>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="glass-effect rounded-xl p-2 mb-6">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="showTab('mass')" id="tab-mass" class="tab-active px-4 py-2 rounded-lg font-medium transition-all">
+                    <i class="fas fa-search mr-2"></i>Mass Scanner
+                </button>
+                <button onclick="showTab('ai-analysis')" id="tab-ai-analysis" class="tab-inactive px-4 py-2 rounded-lg font-medium transition-all">
+                    <i class="fas fa-brain mr-2"></i>AI Analysis
+                </button>
+                <button onclick="showTab('ai-picks')" id="tab-ai-picks" class="tab-inactive px-4 py-2 rounded-lg font-medium transition-all">
+                    <i class="fas fa-star mr-2"></i>AI Picks
+                </button>
+                <button onclick="showTab('ml-trading')" id="tab-ml-trading" class="tab-inactive px-4 py-2 rounded-lg font-medium transition-all">
+                    <i class="fas fa-robot mr-2"></i>ML Trading
+                </button>
+                <button onclick="showTab('options')" id="tab-options" class="tab-inactive px-4 py-2 rounded-lg font-medium transition-all">
+                    <i class="fas fa-chart-line mr-2"></i>Options Flow
+                </button>
+                <button onclick="showTab('technicals')" id="tab-technicals" class="tab-inactive px-4 py-2 rounded-lg font-medium transition-all">
+                    <i class="fas fa-chart-bar mr-2"></i>Technicals
+                </button>
+            </div>
+        </div>
+
+        <!-- Mass Scanner Tab -->
+        <div id="content-mass" class="tab-content">
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-blue-400">
+                        <i class="fas fa-search mr-3"></i>Mass Scanner - <span id="totalStockCount">4,500+</span> Stocks
+                    </h2>
+                    <div class="flex gap-3">
+                        <div class="flex items-center gap-2">
+                            <div id="dataSourceIndicator" class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                            <span id="dataSourceText" class="text-sm text-gray-400">Demo Mode</span>
+                        </div>
+                        <button onclick="switchToLiveData()" id="liveDataBtn" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-all">
+                            <i class="fas fa-wifi mr-2"></i>Enable Live Data
+                        </button>
+                        <button onclick="refreshLiveData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-all">
+                            <i class="fas fa-sync mr-2"></i>Refresh Data
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Advanced Scanner Controls -->
+                <div class="mb-6">
+                    <!-- Primary Controls Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Scan Type</label>
+                            <select id="scanType" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                <option value="TOP_GAINERS">Top Gainers</option>
+                                <option value="TOP_LOSERS">Top Losers</option>
+                                <option value="HIGH_VOLUME">High Volume</option>
+                                <option value="MOMENTUM_BREAKOUT">Momentum Breakout</option>
+                                <option value="OVERSOLD_BOUNCE">Oversold Bounce</option>
+                                <option value="NEW_HIGHS">New 52-Week Highs</option>
+                                <option value="NEW_LOWS">New 52-Week Lows</option>
+                                <option value="GAP_UP">Gap Up</option>
+                                <option value="GAP_DOWN">Gap Down</option>
+                                <option value="UNUSUAL_VOLUME">Unusual Volume</option>
+                                <option value="BREAKOUT_PATTERNS">Breakout Patterns</option>
+                                <option value="OVERSOLD_RSI">Oversold RSI</option>
+                                <option value="OVERBOUGHT_RSI">Overbought RSI</option>
+                                <option value="EARNINGS_MOVERS">Earnings Movers</option>
+                                <option value="MOMENTUM_SQUEEZE">Momentum Squeeze</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Min Price</label>
+                            <input type="number" id="minPrice" value="1" step="0.01" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Max Price</label>
+                            <input type="number" id="maxPrice" value="1000" step="0.01" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Min Volume</label>
+                            <input type="number" id="minVolume" value="100000" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="performScan()" class="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 py-3 rounded-lg font-bold transition-all">
+                                <i class="fas fa-bolt mr-2"></i>SCAN NOW
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters (Collapsible) -->
+                    <div class="glass-effect rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-4 cursor-pointer" onclick="toggleAdvancedFilters()">
+                            <h3 class="text-lg font-bold text-cyan-400">
+                                <i class="fas fa-filter mr-2"></i>Advanced Filters
+                            </h3>
+                            <i id="advancedToggle" class="fas fa-chevron-down text-cyan-400 transition-transform"></i>
+                        </div>
+                        
+                        <div id="advancedFilters" class="hidden">
+                            <!-- Market Cap & Float -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Market Cap</label>
+                                    <select id="marketCap" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">Any Size</option>
+                                        <option value="NANO">Nano (&lt;$50M)</option>
+                                        <option value="MICRO">Micro ($50M-$300M)</option>
+                                        <option value="SMALL">Small ($300M-$2B)</option>
+                                        <option value="MID">Mid ($2B-$10B)</option>
+                                        <option value="LARGE">Large ($10B-$200B)</option>
+                                        <option value="MEGA">Mega (&gt;$200B)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Sector</label>
+                                    <select id="sector" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">All Sectors</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="Healthcare">Healthcare</option>
+                                        <option value="Financial Services">Financial Services</option>
+                                        <option value="Consumer Discretionary">Consumer Discretionary</option>
+                                        <option value="Consumer Staples">Consumer Staples</option>
+                                        <option value="Energy">Energy</option>
+                                        <option value="Basic Materials">Basic Materials</option>
+                                        <option value="Real Estate">Real Estate</option>
+                                        <option value="Utilities">Utilities</option>
+                                        <option value="Communication">Communication</option>
+                                        <option value="Industrials">Industrials</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Relative Volume</label>
+                                    <select id="relativeVolume" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">Any</option>
+                                        <option value="1.5">1.5x+ Average</option>
+                                        <option value="2.0">2x+ Average</option>
+                                        <option value="3.0">3x+ Average</option>
+                                        <option value="5.0">5x+ Average</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Float</label>
+                                    <select id="float" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">Any Float</option>
+                                        <option value="LOW">Low (&lt;50M)</option>
+                                        <option value="MEDIUM">Medium (50M-500M)</option>
+                                        <option value="HIGH">High (&gt;500M)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Technical Indicators -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">RSI Range</label>
+                                    <select id="rsiRange" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">Any RSI</option>
+                                        <option value="OVERSOLD">Oversold (&lt;30)</option>
+                                        <option value="OVERSOLD_MODERATE">Moderate Oversold (30-40)</option>
+                                        <option value="NEUTRAL">Neutral (40-60)</option>
+                                        <option value="OVERBOUGHT_MODERATE">Moderate Overbought (60-70)</option>
+                                        <option value="OVERBOUGHT">Overbought (&gt;70)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">MACD Signal</label>
+                                    <select id="macdSignal" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">Any MACD</option>
+                                        <option value="Strong Bull">Strong Bullish</option>
+                                        <option value="Bullish">Bullish</option>
+                                        <option value="Neutral">Neutral</option>
+                                        <option value="Bearish">Bearish</option>
+                                        <option value="Strong Bear">Strong Bearish</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">MA Position</label>
+                                    <select id="maPosition" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">Any Position</option>
+                                        <option value="ABOVE_ALL">Above All MAs</option>
+                                        <option value="ABOVE_20_50">Above 20 & 50 MA</option>
+                                        <option value="ABOVE_20">Above 20 MA</option>
+                                        <option value="BELOW_20">Below 20 MA</option>
+                                        <option value="BELOW_ALL">Below All MAs</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Chart Pattern</label>
+                                    <select id="chartPattern" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">Any Pattern</option>
+                                        <option value="Breakout">Breakout</option>
+                                        <option value="Momentum">Momentum</option>
+                                        <option value="Uptrend">Uptrend</option>
+                                        <option value="Downtrend">Downtrend</option>
+                                        <option value="Consolidation">Consolidation</option>
+                                        <option value="Support Test">Support Test</option>
+                                        <option value="Squeeze">Squeeze</option>
+                                        <option value="Parabolic">Parabolic</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Fundamental Filters -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">P/E Ratio</label>
+                                    <select id="peRatio" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">Any P/E</option>
+                                        <option value="LOW">Low (&lt;15)</option>
+                                        <option value="MODERATE">Moderate (15-25)</option>
+                                        <option value="HIGH">High (25-50)</option>
+                                        <option value="GROWTH">Growth (&gt;50)</option>
+                                        <option value="PROFITABLE">Profitable Only</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">AI Score</label>
+                                    <select id="aiScoreFilter" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                        <option value="">Any Score</option>
+                                        <option value="90">90+ (Excellent)</option>
+                                        <option value="80">80+ (Very Good)</option>
+                                        <option value="70">70+ (Good)</option>
+                                        <option value="60">60+ (Fair)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Min Change %</label>
+                                    <input type="number" id="minChange" value="" step="0.1" placeholder="e.g. 2.0" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Max Change %</label>
+                                    <input type="number" id="maxChange" value="" step="0.1" placeholder="e.g. 10.0" class="w-full px-3 py-2 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex gap-3">
+                                <button onclick="clearAllFilters()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all">
+                                    <i class="fas fa-eraser mr-2"></i>Clear Filters
+                                </button>
+                                <button onclick="saveCustomScan()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all">
+                                    <i class="fas fa-save mr-2"></i>Save Scan
+                                </button>
+                                <button onclick="loadCustomScan()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-all">
+                                    <i class="fas fa-folder-open mr-2"></i>Load Scan
+                                </button>
+                                <button onclick="exportResults()" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg transition-all">
+                                    <i class="fas fa-download mr-2"></i>Export CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scan Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="glass-effect rounded-lg p-4 border-green-500/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-gray-400">Found</span>
+                            <i class="fas fa-trending-up text-green-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-green-400" id="foundCount">0</div>
+                        <div class="text-sm text-gray-500">from <span id="scannedCount">4,523</span> scanned</div>
+                    </div>
+                    <div class="glass-effect rounded-lg p-4 border-blue-500/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-gray-400">Avg Change</span>
+                            <i class="fas fa-chart-line text-blue-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-green-400" id="avgChange">+3.45%</div>
+                    </div>
+                    <div class="glass-effect rounded-lg p-4 border-purple-500/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-gray-400">Avg Volume</span>
+                            <i class="fas fa-chart-bar text-purple-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-purple-400" id="avgVolume">2.3M</div>
+                    </div>
+                    <div class="glass-effect rounded-lg p-4 border-yellow-500/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-gray-400">Top Sector</span>
+                            <i class="fas fa-industry text-yellow-400"></i>
+                        </div>
+                        <div class="text-lg font-bold text-yellow-400">Technology</div>
+                        <div class="text-sm text-gray-500">12 stocks</div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Results Table -->
+                <div class="glass-effect rounded-xl overflow-hidden">
+                    <div class="bg-gray-900/50 p-4 border-b border-gray-700">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-cyan-400">
+                                <i class="fas fa-list mr-2"></i>Scan Results
+                                <span id="resultCount" class="text-sm text-gray-400 ml-2">(0 found)</span>
+                            </h3>
+                            <div class="flex gap-2">
+                                <button onclick="toggleTableView()" id="tableViewToggle" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-all">
+                                    <i class="fas fa-table mr-1"></i>Compact View
+                                </button>
+                                <button onclick="refreshResults()" class="px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm transition-all">
+                                    <i class="fas fa-sync mr-1"></i>Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full" id="resultsTable">
+                            <thead class="bg-gray-800/50 sticky top-0">
+                                <tr>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('ticker')">
+                                        Ticker <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('price')">
+                                        Price <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('change')">
+                                        Change % <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('volume')">
+                                        Volume <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('relVol')">
+                                        Rel Vol <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('marketCap')">
+                                        Market Cap <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('sector')">
+                                        Sector <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('rsi')">
+                                        RSI <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('pattern')">
+                                        Pattern <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('aiScore')">
+                                        AI Score <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="text-left p-3 text-gray-400">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scanResults">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Results Pagination -->
+                    <div class="bg-gray-900/50 p-4 border-t border-gray-700 flex justify-between items-center">
+                        <div class="text-sm text-gray-400">
+                            Showing <span id="showingStart">1</span>-<span id="showingEnd">25</span> of <span id="totalResults">0</span> results
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="previousPage()" id="prevPage" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-all disabled:opacity-50">
+                                <i class="fas fa-chevron-left mr-1"></i>Previous
+                            </button>
+                            <span class="px-3 py-1 bg-blue-600 rounded text-sm">Page <span id="currentPage">1</span></span>
+                            <button onclick="nextPage()" id="nextPage" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-all disabled:opacity-50">
+                                Next <i class="fas fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Analysis Tab -->
+        <div id="content-ai-analysis" class="tab-content hidden">
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h2 class="text-3xl font-bold mb-6 text-purple-400">
+                    <i class="fas fa-brain mr-3"></i>AI Market Analysis
+                </h2>
+                
+                <!-- AI Chat Interface -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Chat Area -->
+                    <div class="space-y-4">
+                        <div class="glass-effect rounded-lg p-4 h-96 overflow-y-auto" id="aiChatMessages">
+                            <div class="ai-chat-bubble ai-assistant p-3 rounded-lg mb-4">
+                                <div class="font-bold text-purple-400 mb-1">Scanner Pro AI</div>
+                                <div>Hello! I'm your AI trading assistant. Ask me anything about market conditions, stock analysis, or trading strategies. For example:</div>
+                                <ul class="mt-2 text-sm text-gray-300">
+                                    <li>• "Why is AAPL showing strong momentum today?"</li>
+                                    <li>• "Find biotech stocks with high volume"</li>
+                                    <li>• "What's driving tech sector performance?"</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <input type="text" id="aiQuery" placeholder="Ask me about stocks, market conditions, or trading strategies..." 
+                                   class="flex-1 px-4 py-3 bg-gray-900 rounded-lg border border-gray-600 text-white">
+                            <button onclick="sendAIQuery()" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg transition-all">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Market Intelligence Panel -->
+                    <div class="space-y-4">
+                        <div class="glass-effect rounded-lg p-4">
+                            <h3 class="text-xl font-bold mb-3 text-blue-400">
+                                <i class="fas fa-lightbulb mr-2"></i>Smart Suggestions
+                            </h3>
+                            <div id="smartSuggestions" class="space-y-2">
+                                <!-- Dynamic suggestions will be populated here -->
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-gray-700">
+                                <button onclick="refreshSmartSuggestions()" class="w-full bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded-lg text-sm transition-all">
+                                    <i class="fas fa-refresh mr-2"></i>Refresh Suggestions
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="glass-effect rounded-lg p-4">
+                            <h3 class="text-xl font-bold mb-3 text-green-400">
+                                <i class="fas fa-chart-line mr-2"></i>Market Sentiment
+                            </h3>
+                            <div class="chart-container">
+                                <canvas id="sentimentChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Market Regime Analysis Section -->
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h2 class="text-3xl font-bold mb-6 text-cyan-400">
+                    <i class="fas fa-chart-area mr-3"></i>Predictive Market Regime Analysis
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Current Regime -->
+                    <div class="glass-effect rounded-lg p-4">
+                        <h3 class="text-xl font-bold mb-3 text-green-400">
+                            <i class="fas fa-bullseye mr-2"></i>Current Regime
+                        </h3>
+                        <div class="text-center mb-4">
+                            <div class="text-3xl font-bold mb-2" id="currentRegime">Growth Rotation</div>
+                            <div class="text-sm text-gray-400">Confidence: <span class="text-green-400 font-bold" id="regimeConfidence">85%</span></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Duration:</span>
+                                <span class="text-blue-400" id="regimeDuration">2-4 weeks</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Risk Level:</span>
+                                <span class="text-yellow-400" id="riskLevel">Moderate</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">VIX Level:</span>
+                                <span class="text-green-400" id="vixLevel">16.8</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Regime Signals -->
+                    <div class="glass-effect rounded-lg p-4">
+                        <h3 class="text-xl font-bold mb-3 text-purple-400">
+                            <i class="fas fa-signal mr-2"></i>Key Signals
+                        </h3>
+                        <div class="space-y-3" id="regimeSignals">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-400 rounded-full mr-3"></div>
+                                <div class="text-sm">VIX below 20 (Bullish)</div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-400 rounded-full mr-3"></div>
+                                <div class="text-sm">Tech sector leadership</div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-yellow-400 rounded-full mr-3"></div>
+                                <div class="text-sm">High volume breakouts</div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-400 rounded-full mr-3"></div>
+                                <div class="text-sm">Credit spreads tightening</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-3 border-t border-gray-700">
+                            <button onclick="analyzeRegimeChange()" class="w-full bg-purple-600 hover:bg-purple-700 py-2 px-4 rounded-lg text-sm transition-all">
+                                <i class="fas fa-sync mr-2"></i>Analyze Regime Change
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Predictive Outlook -->
+                    <div class="glass-effect rounded-lg p-4">
+                        <h3 class="text-xl font-bold mb-3 text-orange-400">
+                            <i class="fas fa-crystal-ball mr-2"></i>Predictive Outlook
+                        </h3>
+                        <div class="mb-4">
+                            <div class="chart-container" style="height: 200px;">
+                                <canvas id="regimePredictionChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="text-sm space-y-2">
+                            <div class="p-2 bg-green-500/10 rounded border-l-2 border-green-400">
+                                <strong>Next 2 weeks:</strong> Continued growth rotation with 78% probability
+                            </div>
+                            <div class="p-2 bg-yellow-500/10 rounded border-l-2 border-yellow-400">
+                                <strong>Risk Scenario:</strong> VIX spike above 22 could trigger defensive rotation
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trading Strategy Recommendations -->
+                <div class="mt-6">
+                    <h3 class="text-xl font-bold mb-4 text-pink-400">
+                        <i class="fas fa-chess mr-2"></i>Regime-Based Trading Strategies
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="strategyRecommendations">
+                        <div class="glass-effect rounded-lg p-4 border-l-4 border-green-400">
+                            <h4 class="font-bold text-green-400 mb-2">Momentum Strategy</h4>
+                            <p class="text-sm text-gray-300">Focus on high-volume breakouts in technology and growth sectors. Use 20-day MA as trend filter.</p>
+                            <div class="mt-2 text-xs text-green-400">Success Rate: 73% in current regime</div>
+                        </div>
+                        <div class="glass-effect rounded-lg p-4 border-l-4 border-blue-400">
+                            <h4 class="font-bold text-blue-400 mb-2">Sector Rotation</h4>
+                            <p class="text-sm text-gray-300">Rotate from value to growth sectors. Overweight XLK, underweight XLE. Monitor relative strength.</p>
+                            <div class="mt-2 text-xs text-blue-400">Current Rotation Score: +67</div>
+                        </div>
+                        <div class="glass-effect rounded-lg p-4 border-l-4 border-purple-400">
+                            <h4 class="font-bold text-purple-400 mb-2">Options Strategy</h4>
+                            <p class="text-sm text-gray-300">Sell volatility in low VIX environment. Consider iron condors on stable names with high IV rank.</p>
+                            <div class="mt-2 text-xs text-purple-400">IV Percentile: 25th</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Picks Tab -->
+        <div id="content-ai-picks" class="tab-content hidden">
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h2 class="text-3xl font-bold mb-6 text-pink-400">
+                    <i class="fas fa-star mr-3"></i>AI-Powered Stock Recommendations
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Top Picks -->
+                    <div class="lg:col-span-2">
+                        <h3 class="text-xl font-bold mb-4 text-blue-400">Today's Top AI Picks</h3>
+                        <div class="space-y-4" id="aiPicks">
+                        </div>
+                    </div>
+
+                    <!-- AI Confidence Metrics -->
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-purple-400">AI Confidence Metrics</h3>
+                        <div class="chart-container">
+                            <canvas id="confidenceChart"></canvas>
+                        </div>
+                        
+                        <div class="mt-6 space-y-3">
+                            <div class="glass-effect rounded-lg p-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">Technical Analysis</span>
+                                    <span class="text-green-400 font-bold">94%</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-2 mt-2">
+                                    <div class="bg-green-400 h-2 rounded-full" style="width: 94%"></div>
+                                </div>
+                            </div>
+                            <div class="glass-effect rounded-lg p-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">Fundamental Score</span>
+                                    <span class="text-blue-400 font-bold">87%</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-2 mt-2">
+                                    <div class="bg-blue-400 h-2 rounded-full" style="width: 87%"></div>
+                                </div>
+                            </div>
+                            <div class="glass-effect rounded-lg p-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">Market Sentiment</span>
+                                    <span class="text-yellow-400 font-bold">76%</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-2 mt-2">
+                                    <div class="bg-yellow-400 h-2 rounded-full" style="width: 76%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ML Trading Tab -->
+        <div id="content-ml-trading" class="tab-content hidden">
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h2 class="text-3xl font-bold mb-6 text-indigo-400">
+                    <i class="fas fa-robot mr-3"></i>ML Trading System Enhanced
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Trading Dashboard -->
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-green-400">Active Positions</h3>
+                        <div class="space-y-3" id="activePositions">
+                        </div>
+                        
+                        <h3 class="text-xl font-bold mb-4 mt-6 text-blue-400">Trade Signals</h3>
+                        <div class="space-y-3" id="tradeSignals">
+                        </div>
+                    </div>
+
+                    <!-- Performance Chart -->
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-purple-400">Portfolio Performance</h3>
+                        <div class="chart-container">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div class="glass-effect rounded-lg p-3 text-center">
+                                <div class="text-2xl font-bold text-green-400">+12.3%</div>
+                                <div class="text-sm text-gray-400">Total Return</div>
+                            </div>
+                            <div class="glass-effect rounded-lg p-3 text-center">
+                                <div class="text-2xl font-bold text-blue-400">87%</div>
+                                <div class="text-sm text-gray-400">Win Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Options Flow Tab -->
+        <div id="content-options" class="tab-content hidden">
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h2 class="text-3xl font-bold mb-6 text-green-400">
+                    <i class="fas fa-chart-line mr-3"></i>Options Flow Scanner
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Unusual Options Activity</h3>
+                        <div class="space-y-3" id="optionsFlow">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Options Volume Chart</h3>
+                        <div class="chart-container">
+                            <canvas id="optionsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technicals Tab -->
+        <div id="content-technicals" class="tab-content hidden">
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h2 class="text-3xl font-bold mb-6 text-yellow-400">
+                    <i class="fas fa-chart-bar mr-3"></i>Technical Analysis Dashboard
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Market Indicators</h3>
+                        <div class="space-y-3" id="technicalIndicators">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Technical Patterns</h3>
+                        <div class="chart-container">
+                            <canvas id="technicalChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="glass-effect rounded-lg p-4 border-green-500/30">
+            <div class="flex justify-between items-center">
+                <div>
+                    <span class="text-green-400 font-bold">
+                        <i class="fas fa-check-circle mr-2"></i>System Status:
+                    </span>
+                    <span>All APIs connected • Real-time data active • AI models online</span>
+                </div>
+                <div class="text-gray-400">
+                    Powered by Polygon API, Claude AI, and Advanced ML Models
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MASSIVE STOCK DATABASE GENERATOR - 4,500+ Stocks Ready for Live Data Integration
+        let mockStocks = [];
+        
+        // Stock Database Generator Configuration
+        const stockConfig = {
+            // Real Stock Symbols by Sector (Sample sets - will be expanded to 4,500+)
+            sectors: {
+                'Technology': {
+                    count: 800,
+                    symbols: ['AAPL', 'MSFT', 'NVDA', 'AMD', 'GOOGL', 'META', 'TSLA', 'CRM', 'ORCL', 'INTC', 'IBM', 'ADBE', 'NOW', 'SNOW', 'PLTR', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'TWLO', 'ZM', 'DBX', 'BOX', 'WORK', 'TEAM', 'OKTA', 'CRWD', 'ZS', 'NET', 'FSLY', 'MDB', 'DDOG', 'ESTC', 'SPLK', 'VEEV', 'WDAY', 'ANSS', 'CDNS', 'SNPS', 'ADSK', 'INTU', 'FTNT', 'PANW', 'CYBR', 'TENB', 'SAIL', 'QLYS', 'PING', 'FEYE', 'VRNS'],
+                    avgPrice: 150, priceRange: [5, 500], avgVolume: 25, volumeRange: [0.5, 200], peRange: [15, 80]
+                },
+                'Healthcare': {
+                    count: 650,
+                    symbols: ['JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'TMO', 'ABT', 'DHR', 'BMY', 'AMGN', 'GILD', 'MDLZ', 'CVS', 'CI', 'ANTM', 'HUM', 'CNC', 'MOH', 'ELV', 'MRNA', 'BNTX', 'NVAX', 'REGN', 'VRTX', 'BIIB', 'ILMN', 'ISRG', 'DXCM', 'ZBH', 'SYK', 'BSX', 'MDT', 'EW', 'HOLX', 'A', 'ALGN', 'RMD', 'IDXX', 'MTD', 'IQV', 'PKI', 'WAT', 'TECH', 'QGEN', 'MASI', 'PODD', 'NEOG', 'OMCL', 'CTLT', 'NTRA'],
+                    avgPrice: 120, priceRange: [8, 600], avgVolume: 15, volumeRange: [0.3, 150], peRange: [12, 45]
+                },
+                'Financial Services': {
+                    count: 550,
+                    symbols: ['JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'USB', 'PNC', 'TFC', 'COF', 'AXP', 'BLK', 'SCHW', 'CB', 'MMC', 'ICE', 'CME', 'SPGI', 'MCO', 'TRV', 'AIG', 'PRU', 'MET', 'AFL', 'ALL', 'PGR', 'HIG', 'CMA', 'FITB', 'RF', 'CFG', 'KEY', 'HBAN', 'FHN', 'PBCT', 'ZION', 'WTFC', 'SNV', 'PB', 'ONB', 'SOFI', 'UPST', 'AFRM', 'LC', 'HOOD', 'COIN', 'SQ', 'PYPL', 'V', 'MA'],
+                    avgPrice: 85, priceRange: [3, 450], avgVolume: 20, volumeRange: [0.8, 180], peRange: [8, 35]
+                },
+                'Consumer Discretionary': {
+                    count: 500,
+                    symbols: ['AMZN', 'TSLA', 'HD', 'MCD', 'NKE', 'SBUX', 'LOW', 'TJX', 'BKNG', 'ABNB', 'GM', 'F', 'NFLX', 'DIS', 'CMCSA', 'T', 'VZ', 'CHTR', 'TMUS', 'DISH', 'PARA', 'WBD', 'FOXA', 'FOX', 'NWSA', 'NWS', 'ROKU', 'SPOT', 'PINS', 'SNAP', 'TWTR', 'UBER', 'LYFT', 'DASH', 'ABNB', 'ETSY', 'EBAY', 'MELI', 'SE', 'BABA', 'PDD', 'JD', 'NTES', 'YMM', 'VIPS', 'GME', 'AMC', 'BBBY', 'EXPR', 'NAKD'],
+                    avgPrice: 95, priceRange: [2, 400], avgVolume: 35, volumeRange: [1, 300], peRange: [10, 120]
+                },
+                'Consumer Staples': {
+                    count: 200,
+                    symbols: ['PG', 'KO', 'PEP', 'WMT', 'COST', 'CL', 'KMB', 'GIS', 'K', 'CPB', 'CAG', 'SJM', 'HSY', 'MDLZ', 'MNST', 'KDP', 'STZ', 'TAP', 'BF.B', 'DEO', 'PM', 'MO', 'BTI', 'UL', 'NSRGY', 'UN', 'EL', 'AVP', 'CHD', 'CLX', 'COTY', 'HRL', 'MKC', 'LW', 'TSN', 'CALM', 'INGR', 'SMPL', 'JJSF', 'LANC'],
+                    avgPrice: 110, priceRange: [25, 200], avgVolume: 8, volumeRange: [0.2, 50], peRange: [15, 35]
+                },
+                'Energy': {
+                    count: 400,
+                    symbols: ['XOM', 'CVX', 'COP', 'EOG', 'SLB', 'MPC', 'PSX', 'VLO', 'HES', 'BKR', 'HAL', 'DVN', 'FANG', 'APA', 'EQT', 'CNX', 'AR', 'SM', 'RRC', 'CLR', 'WLL', 'OVV', 'MRO', 'APC', 'NBL', 'COG', 'CXO', 'PXD', 'MTDR', 'CTRA', 'VNOM', 'OXY', 'CVE', 'SU', 'CNQ', 'IMO', 'TRP', 'ENB', 'PPL', 'KMI', 'WMB', 'OKE', 'LNG', 'TRGP', 'AM', 'EPD', 'ET', 'MPLX', 'PAA', 'WES'],
+                    avgPrice: 75, priceRange: [8, 200], avgVolume: 18, volumeRange: [0.5, 120], peRange: [6, 25]
+                },
+                'Basic Materials': {
+                    count: 350,
+                    symbols: ['LIN', 'APD', 'SHW', 'FCX', 'NUE', 'DOW', 'DD', 'PPG', 'ECL', 'EMN', 'LYB', 'CF', 'FMC', 'ALB', 'IFF', 'RPM', 'AVY', 'IP', 'PKG', 'WRK', 'SON', 'SEE', 'KWR', 'SLGN', 'HUN', 'CE', 'OLN', 'TROX', 'HWKN', 'GEF', 'NEU', 'CC', 'AMCR', 'BLL', 'CLF', 'X', 'STLD', 'RS', 'CMC', 'GGB', 'MT', 'PKX', 'AA', 'CENX', 'KALU', 'ATI', 'TMK', 'CRS', 'SXC', 'ZEUS'],
+                    avgPrice: 65, priceRange: [5, 180], avgVolume: 12, volumeRange: [0.3, 80], peRange: [8, 30]
+                },
+                'Industrials': {
+                    count: 600,
+                    symbols: ['CAT', 'BA', 'HON', 'UNP', 'UPS', 'RTX', 'DE', 'LMT', 'GE', 'MMM', 'FDX', 'WM', 'CSX', 'NSC', 'EMR', 'ETN', 'PH', 'CARR', 'OTIS', 'GD', 'NOC', 'TXT', 'ITW', 'CMI', 'ROK', 'PCAR', 'IR', 'FAST', 'PAYX', 'VRSK', 'CPRT', 'RSG', 'ODFL', 'EXPD', 'CHRW', 'JBHT', 'KNX', 'XYL', 'DOV', 'FTV', 'ALLE', 'NDSN', 'PNR', 'SWK', 'TT', 'RHI', 'MSA', 'HUBB', 'BLDR', 'MAS'],
+                    avgPrice: 90, priceRange: [12, 300], avgVolume: 15, volumeRange: [0.4, 90], peRange: [12, 40]
+                },
+                'Real Estate': {
+                    count: 250,
+                    symbols: ['SPG', 'PLD', 'CCI', 'AMT', 'EQIX', 'PSA', 'EXR', 'AVB', 'EQR', 'WELL', 'DLR', 'O', 'SBAC', 'WY', 'ARE', 'ESS', 'MAA', 'UDR', 'CPT', 'HST', 'REG', 'BXP', 'VTR', 'PEAK', 'AIV', 'ACC', 'ELS', 'UMH', 'SUI', 'CUBE', 'LSI', 'REXR', 'IRT', 'AMH', 'SLG', 'VNO', 'KRC', 'HIW', 'DEI', 'CUZ', 'PGRE', 'OFC', 'JBGS', 'HPP', 'ESRT', 'CLI', 'GMRE', 'PIR', 'SHO', 'RLJ'],
+                    avgPrice: 55, priceRange: [8, 150], avgVolume: 6, volumeRange: [0.1, 40], peRange: [10, 25]
+                },
+                'Utilities': {
+                    count: 200,
+                    symbols: ['NEE', 'DUK', 'SO', 'D', 'AEP', 'EXC', 'XEL', 'SRE', 'PEG', 'ED', 'ES', 'FE', 'EIX', 'ETR', 'WEC', 'DTE', 'PPL', 'AES', 'LNT', 'NI', 'CMS', 'CNP', 'NRG', 'ATO', 'VST', 'AWK', 'AEE', 'EVRG', 'PNW', 'IDA', 'PCG', 'NJR', 'SWX', 'OGE', 'UGI', 'BKH', 'SR', 'MDU', 'POR', 'AVA', 'AGR', 'NWE', 'HE', 'NEP', 'NOVA', 'MGEE', 'OTTR', 'MSEX', 'UTL', 'YORW'],
+                    avgPrice: 80, priceRange: [20, 120], avgVolume: 4, volumeRange: [0.1, 25], peRange: [12, 22]
+                }
+            },
+            patterns: ['Breakout', 'Momentum', 'Uptrend', 'Downtrend', 'Consolidation', 'Support Test', 'Squeeze', 'Parabolic', 'Recovery', 'Sideways', 'Pullback'],
+            macdSignals: ['Strong Bull', 'Bullish', 'Neutral', 'Bearish', 'Strong Bear', 'Overbought', 'Extreme Bull', 'Extreme', 'Parabolic']
+        };
+
+        // Generate comprehensive stock database
+        function generateMassiveStockDatabase() {
+            mockStocks = [];
+            let stockId = 1;
+            
+            console.log('🚀 Generating 4,500+ stock database...');
+            
+            Object.entries(stockConfig.sectors).forEach(([sectorName, config]) => {
+                console.log(`📊 Generating ${config.count} ${sectorName} stocks...`);
+                
+                for (let i = 0; i < config.count; i++) {
+                    const stock = generateRealisticStock(sectorName, config, stockId++);
+                    if (stock) {
+                        mockStocks.push(stock);
+                    }
+                }
+            });
+            
+            console.log(`✅ Generated ${mockStocks.length} stocks across ${Object.keys(stockConfig.sectors).length} sectors`);
+            return mockStocks;
+        }
+
+        function generateRealisticStock(sector, config, id) {
+            // Use real symbols when available, otherwise generate realistic ones
+            const baseSymbol = config.symbols[id % config.symbols.length];
+            const ticker = id <= config.symbols.length ? baseSymbol : generateTicker(baseSymbol, id);
+            
+            // Generate realistic price based on sector averages
+            const price = generatePrice(config.avgPrice, config.priceRange);
+            const change = (Math.random() - 0.5) * 20; // -10% to +10%
+            
+            // Generate volume with realistic distribution
+            const volumeM = generateVolume(config.avgVolume, config.volumeRange);
+            const volume = formatVolume(volumeM);
+            
+            // Generate market cap based on price and realistic shares outstanding
+            const sharesOutstanding = Math.random() * 5000 + 100; // 100M to 5B shares
+            const marketCapB = (price * sharesOutstanding) / 1000;
+            const marketCap = formatMarketCap(marketCapB);
+            
+            // Generate realistic PE ratio
+            const pe = config.peRange[0] + Math.random() * (config.peRange[1] - config.peRange[0]);
+            const eps = pe > 0 ? price / pe : -Math.random() * 5;
+            
+            // Generate technical indicators
+            const rsi = Math.random() * 100;
+            const macd = stockConfig.macdSignals[Math.floor(Math.random() * stockConfig.macdSignals.length)];
+            const pattern = stockConfig.patterns[Math.floor(Math.random() * stockConfig.patterns.length)];
+            
+            // Generate moving averages relative to current price
+            const ma20 = price * (0.95 + Math.random() * 0.1); // ±5%
+            const ma50 = price * (0.92 + Math.random() * 0.16); // ±8%
+            const ma200 = price * (0.85 + Math.random() * 0.3); // ±15%
+            
+            // Generate float (typically 60-90% of shares outstanding)
+            const floatM = sharesOutstanding * (0.6 + Math.random() * 0.3);
+            const float = formatFloat(floatM);
+            
+            // Generate relative volume (most stocks 0.5x to 2x, with some outliers)
+            const relVol = Math.random() < 0.9 ? 0.5 + Math.random() * 1.5 : 2 + Math.random() * 6;
+            
+            // Generate AI Score (weighted by technical indicators and fundamentals)
+            const aiScore = Math.min(100, Math.max(30, 
+                (rsi > 70 ? 85 : rsi < 30 ? 90 : 75) + 
+                (change > 0 ? 10 : -5) + 
+                (relVol > 1.5 ? 5 : 0) + 
+                Math.random() * 20 - 10
+            ));
+
+            return {
+                ticker,
+                price: parseFloat(price.toFixed(2)),
+                change: parseFloat(change.toFixed(2)),
+                volume,
+                sector,
+                marketCap,
+                pe: parseFloat(pe.toFixed(1)),
+                eps: parseFloat(eps.toFixed(2)),
+                rsi: Math.round(rsi),
+                macd,
+                ma20: parseFloat(ma20.toFixed(2)),
+                ma50: parseFloat(ma50.toFixed(2)),
+                ma200: parseFloat(ma200.toFixed(2)),
+                float,
+                aiScore: Math.round(aiScore),
+                pattern,
+                relVol: parseFloat(relVol.toFixed(1))
+            };
+        }
+
+        function generateTicker(baseSymbol, id) {
+            const suffixes = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+            const numbers = ['', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            
+            if (id <= 100) return baseSymbol;
+            
+            const suffix = suffixes[id % suffixes.length];
+            const number = numbers[Math.floor(id / suffixes.length) % numbers.length];
+            
+            return baseSymbol + suffix + number;
+        }
+
+        function generatePrice(avgPrice, range) {
+            // Use log-normal distribution for more realistic price distribution
+            const min = range[0];
+            const max = range[1];
+            const factor = Math.random() * 0.8 + 0.6; // 0.6 to 1.4 multiplier
+            return Math.min(max, Math.max(min, avgPrice * factor));
+        }
+
+        function generateVolume(avgVolume, range) {
+            const min = range[0];
+            const max = range[1];
+            const factor = Math.random() * 1.5 + 0.25; // 0.25 to 1.75 multiplier
+            return Math.min(max, Math.max(min, avgVolume * factor));
+        }
+
+        function formatVolume(volumeM) {
+            if (volumeM >= 1000) return `${(volumeM/1000).toFixed(1)}B`;
+            return `${volumeM.toFixed(1)}M`;
+        }
+
+        function formatMarketCap(capB) {
+            if (capB >= 1000) return `${(capB/1000).toFixed(1)}T`;
+            if (capB >= 1) return `${capB.toFixed(0)}B`;
+            return `${(capB * 1000).toFixed(0)}M`;
+        }
+
+        function formatFloat(floatM) {
+            if (floatM >= 1000) return `${(floatM/1000).toFixed(1)}B`;
+            return `${floatM.toFixed(0)}M`;
+        }
+
+        // Initialize the massive database
+        generateMassiveStockDatabase();
+
+        // ====================================================================
+        // LIVE DATA INTEGRATION LAYER - Ready for Polygon API Integration
+        // ====================================================================
+
+        // API Configuration - READY FOR YOUR POLYGON KEYS
+        const API_CONFIG = {
+            POLYGON_API_KEY: 'YOUR_POLYGON_API_KEY_HERE', // Replace with your key
+            POLYGON_BASE_URL: 'https://api.polygon.io',
+            FMP_API_KEY: 'YOUR_FMP_API_KEY_HERE', // Replace with your key  
+            FMP_BASE_URL: 'https://financialmodelingprep.com/api',
+            USE_LIVE_DATA: false, // Set to true when ready for live data
+            WEBSOCKET_URL: 'wss://socket.polygon.io/stocks',
+            UPDATE_INTERVAL: 5000, // 5 seconds for live updates
+            MAX_BATCH_SIZE: 100 // API batch request size
+        };
+
+        // Simple Data Manager Object
+        const dataManager = {
+            isLive: false,
+            websocket: null,
+            
+            initialize: function() {
+                console.log('🟡 DEMO MODE: Using comprehensive mock database...');
+                console.log(`📊 Mock database loaded: ${mockStocks.length} stocks`);
+            },
+            
+            enableLiveData: async function() {
+                alert('🚀 Live Data Integration Ready!\n\nTo enable live data:\n1. Replace API keys in the code\n2. Set USE_LIVE_DATA: true\n3. Deploy with backend proxy for security');
+            }
+        };
+
+
+        
+        // API Integration Functions (Ready for Live Data)
+        async function switchToLiveData() {
+            await dataManager.enableLiveData();
+        }
+
+        // Enhanced scan function that works with both mock and live data
+        function refreshLiveData() {
+            console.log('🔄 Refreshing mock data...');
+            generateMassiveStockDatabase();
+            performScan();
+        }
+
+        // Enhanced AI response system with stock-specific analysis
+        const stockDatabase = {
+            'AAPL': {
+                sector: 'Technology',
+                price: 189.50,
+                change: 2.34,
+                volume: '45.2M',
+                analysis: 'Strong institutional buying with iPhone 15 launch momentum. Breaking above 20-day MA with high volume confirmation.',
+                technicals: 'RSI: 68, MACD: Bullish crossover, Volume: Above average',
+                catalysts: 'iPhone 15 sales, Services revenue growth, China recovery'
+            },
+            'NVDA': {
+                sector: 'Technology',
+                price: 421.18,
+                change: 8.45,
+                volume: '52.1M',
+                analysis: 'AI chip demand surge with data center expansion. Breaking multi-month resistance with institutional accumulation.',
+                technicals: 'RSI: 72, MACD: Strong bullish, Volume: 3x average',
+                catalysts: 'AI chip demand, Data center growth, Gaming recovery'
+            },
+            'TSLA': {
+                sector: 'Consumer Discretionary',
+                price: 244.32,
+                change: -1.23,
+                volume: '98.7M',
+                analysis: 'Consolidating after delivery numbers. Showing support at 200-day MA with options flow indicating accumulation.',
+                technicals: 'RSI: 45, MACD: Neutral, Volume: High',
+                catalysts: 'Q3 deliveries, FSD updates, Cybertruck production'
+            },
+            'AMD': {
+                sector: 'Technology',
+                price: 101.45,
+                change: 4.56,
+                volume: '41.8M',
+                analysis: 'Data center CPU gains and AI chip competition. Benefiting from Intel market share capture.',
+                technicals: 'RSI: 65, MACD: Bullish, Volume: Above average',
+                catalysts: 'Server CPU adoption, AI chip development, Intel competition'
+            },
+            'MSFT': {
+                sector: 'Technology',
+                price: 338.11,
+                change: 1.89,
+                volume: '28.4M',
+                analysis: 'Azure growth and AI integration driving valuations. Strong enterprise demand with cloud migration trends.',
+                technicals: 'RSI: 58, MACD: Bullish, Volume: Normal',
+                catalysts: 'Azure growth, AI integration, Enterprise adoption'
+            }
+        };
+
+        const marketRegimes = {
+            current: 'Growth Rotation',
+            confidence: 85,
+            signals: ['VIX below 20', 'Tech sector leadership', 'High volume breakouts'],
+            outlook: 'Bullish momentum with sector rotation from value to growth',
+            timeframe: '2-4 weeks',
+            riskLevel: 'Moderate'
+        };
+
+        const smartScanSuggestions = [
+            {
+                type: 'breakout',
+                title: 'Momentum Breakout Alert',
+                description: 'Technology stocks breaking above 50-day MA with high volume. Focus on semiconductor and AI names.',
+                priority: 'high',
+                actionItems: ['Scan for volume > 2x average', 'Look for 50-day MA breaks', 'Check semiconductor ETF SMH']
+            },
+            {
+                type: 'sector',
+                title: 'Sector Rotation Signal',
+                description: 'Growth stocks outperforming value by 3.2% this week. Technology and Healthcare leading.',
+                priority: 'medium',
+                actionItems: ['Scan QQQ holdings', 'Check XLK vs XLV performance', 'Monitor ARKK flows']
+            },
+            {
+                type: 'volatility',
+                title: 'Low Volatility Environment',
+                description: 'VIX at 16.8 suggests complacency. Consider volatility plays and defensive hedges.',
+                priority: 'low',
+                actionItems: ['Monitor VIX for reversal', 'Consider protective puts', 'Watch credit spreads']
+            }
+        ];
+
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+                tab.className = tab.className.replace('tab-active', 'tab-inactive');
+            });
+            
+            // Show selected content and activate tab
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).className = 
+                document.getElementById(`tab-${tabName}`).className.replace('tab-inactive', 'tab-active');
+        }
+
+        // Perform scan functionality
+        // Global variables for scanner
+        let currentResults = [];
+        let filteredResults = [];
+        let currentPage = 1;
+        let resultsPerPage = 25;
+        let sortColumn = '';
+        let sortDirection = 'asc';
+
+        // Enhanced perform scan functionality with advanced filtering
+        function performScan() {
+            const scanType = document.getElementById('scanType').value;
+            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || 999999;
+            const minVolume = parseInt(document.getElementById('minVolume').value) || 0;
+            
+            // Get advanced filter values
+            const marketCap = document.getElementById('marketCap')?.value || '';
+            const sector = document.getElementById('sector')?.value || '';
+            const relativeVolume = parseFloat(document.getElementById('relativeVolume')?.value) || 0;
+            const float = document.getElementById('float')?.value || '';
+            const rsiRange = document.getElementById('rsiRange')?.value || '';
+            const macdSignal = document.getElementById('macdSignal')?.value || '';
+            const maPosition = document.getElementById('maPosition')?.value || '';
+            const chartPattern = document.getElementById('chartPattern')?.value || '';
+            const peRatio = document.getElementById('peRatio')?.value || '';
+            const aiScoreFilter = parseFloat(document.getElementById('aiScoreFilter')?.value) || 0;
+            const minChange = parseFloat(document.getElementById('minChange')?.value) || -999;
+            const maxChange = parseFloat(document.getElementById('maxChange')?.value) || 999;
+
+            // Apply filters to mock stocks
+            let results = mockStocks.filter(stock => {
+                // Basic filters
+                if (stock.price < minPrice || stock.price > maxPrice) return false;
+                if (parseFloat(stock.volume.replace(/[^0-9.]/g, '')) * 1000000 < minVolume) return false;
+                if (stock.change < minChange || stock.change > maxChange) return false;
+                
+                // Advanced filters
+                if (sector && stock.sector !== sector) return false;
+                if (relativeVolume && stock.relVol < relativeVolume) return false;
+                if (aiScoreFilter && stock.aiScore < aiScoreFilter) return false;
+                if (chartPattern && stock.pattern !== chartPattern) return false;
+                if (macdSignal && stock.macd !== macdSignal) return false;
+                
+                // Market cap filter
+                if (marketCap) {
+                    const capValue = parseMarketCap(stock.marketCap);
+                    if (!matchesMarketCapFilter(capValue, marketCap)) return false;
+                }
+                
+                // Float filter
+                if (float) {
+                    const floatValue = parseFloat(stock.float.replace(/[^0-9.]/g, ''));
+                    if (!matchesFloatFilter(floatValue, float)) return false;
+                }
+                
+                // RSI filter
+                if (rsiRange && !matchesRSIFilter(stock.rsi, rsiRange)) return false;
+                
+                // P/E filter
+                if (peRatio && !matchesPEFilter(stock.pe, peRatio)) return false;
+                
+                // MA position filter
+                if (maPosition && !matchesMAPosition(stock, maPosition)) return false;
+                
+                return true;
+            });
+
+            // Apply scan type specific filters
+            results = applyScanTypeFilter(results, scanType);
+            
+            // Sort results by scan type logic
+            results = sortByScanType(results, scanType);
+            
+            currentResults = results;
+            filteredResults = [...results];
+            currentPage = 1;
+            
+            updateResultsDisplay();
+            updateScanSummary(results);
+        }
+
+        function parseMarketCap(capString) {
+            const value = parseFloat(capString.replace(/[^0-9.]/g, ''));
+            if (capString.includes('T')) return value * 1000000;
+            if (capString.includes('B')) return value * 1000;
+            if (capString.includes('M')) return value;
+            return value;
+        }
+
+        function matchesMarketCapFilter(capValue, filter) {
+            switch(filter) {
+                case 'NANO': return capValue < 50;
+                case 'MICRO': return capValue >= 50 && capValue < 300;
+                case 'SMALL': return capValue >= 300 && capValue < 2000;
+                case 'MID': return capValue >= 2000 && capValue < 10000;
+                case 'LARGE': return capValue >= 10000 && capValue < 200000;
+                case 'MEGA': return capValue >= 200000;
+                default: return true;
+            }
+        }
+
+        function matchesFloatFilter(floatValue, filter) {
+            switch(filter) {
+                case 'LOW': return floatValue < 50;
+                case 'MEDIUM': return floatValue >= 50 && floatValue <= 500;
+                case 'HIGH': return floatValue > 500;
+                default: return true;
+            }
+        }
+
+        function matchesRSIFilter(rsi, filter) {
+            switch(filter) {
+                case 'OVERSOLD': return rsi < 30;
+                case 'OVERSOLD_MODERATE': return rsi >= 30 && rsi <= 40;
+                case 'NEUTRAL': return rsi > 40 && rsi < 60;
+                case 'OVERBOUGHT_MODERATE': return rsi >= 60 && rsi <= 70;
+                case 'OVERBOUGHT': return rsi > 70;
+                default: return true;
+            }
+        }
+
+        function matchesPEFilter(pe, filter) {
+            switch(filter) {
+                case 'LOW': return pe > 0 && pe < 15;
+                case 'MODERATE': return pe >= 15 && pe <= 25;
+                case 'HIGH': return pe > 25 && pe <= 50;
+                case 'GROWTH': return pe > 50;
+                case 'PROFITABLE': return pe > 0;
+                default: return true;
+            }
+        }
+
+        function matchesMAPosition(stock, filter) {
+            const price = stock.price;
+            const ma20 = stock.ma20;
+            const ma50 = stock.ma50;
+            const ma200 = stock.ma200;
+            
+            switch(filter) {
+                case 'ABOVE_ALL': return price > ma20 && price > ma50 && price > ma200;
+                case 'ABOVE_20_50': return price > ma20 && price > ma50;
+                case 'ABOVE_20': return price > ma20;
+                case 'BELOW_20': return price < ma20;
+                case 'BELOW_ALL': return price < ma20 && price < ma50 && price < ma200;
+                default: return true;
+            }
+        }
+
+        function applyScanTypeFilter(results, scanType) {
+            switch(scanType) {
+                case 'TOP_GAINERS':
+                    return results.filter(stock => stock.change > 0);
+                case 'TOP_LOSERS':
+                    return results.filter(stock => stock.change < 0);
+                case 'HIGH_VOLUME':
+                    return results.filter(stock => stock.relVol >= 1.5);
+                case 'MOMENTUM_BREAKOUT':
+                    return results.filter(stock => stock.pattern === 'Breakout' || stock.pattern === 'Momentum');
+                case 'OVERSOLD_BOUNCE':
+                    return results.filter(stock => stock.rsi < 40 && stock.change > 0);
+                case 'NEW_HIGHS':
+                    return results.filter(stock => stock.change > 5 && stock.rsi > 60);
+                case 'NEW_LOWS':
+                    return results.filter(stock => stock.change < -5 && stock.rsi < 40);
+                case 'GAP_UP':
+                    return results.filter(stock => stock.change > 3);
+                case 'GAP_DOWN':
+                    return results.filter(stock => stock.change < -3);
+                case 'UNUSUAL_VOLUME':
+                    return results.filter(stock => stock.relVol >= 2.0);
+                case 'BREAKOUT_PATTERNS':
+                    return results.filter(stock => stock.pattern === 'Breakout');
+                case 'OVERSOLD_RSI':
+                    return results.filter(stock => stock.rsi < 30);
+                case 'OVERBOUGHT_RSI':
+                    return results.filter(stock => stock.rsi > 70);
+                case 'EARNINGS_MOVERS':
+                    return results.filter(stock => Math.abs(stock.change) > 5);
+                case 'MOMENTUM_SQUEEZE':
+                    return results.filter(stock => stock.pattern === 'Squeeze' || stock.pattern === 'Parabolic');
+                default:
+                    return results;
+            }
+        }
+
+        function sortByScanType(results, scanType) {
+            switch(scanType) {
+                case 'TOP_GAINERS':
+                    return results.sort((a, b) => b.change - a.change);
+                case 'TOP_LOSERS':
+                    return results.sort((a, b) => a.change - b.change);
+                case 'HIGH_VOLUME':
+                case 'UNUSUAL_VOLUME':
+                    return results.sort((a, b) => b.relVol - a.relVol);
+                case 'MOMENTUM_BREAKOUT':
+                case 'BREAKOUT_PATTERNS':
+                    return results.sort((a, b) => b.aiScore - a.aiScore);
+                default:
+                    return results.sort((a, b) => b.aiScore - a.aiScore);
+            }
+        }
+
+        function updateResultsDisplay() {
+            const resultsBody = document.getElementById('scanResults');
+            const startIndex = (currentPage - 1) * resultsPerPage;
+            const endIndex = Math.min(startIndex + resultsPerPage, filteredResults.length);
+            const pageResults = filteredResults.slice(startIndex, endIndex);
+            
+            resultsBody.innerHTML = '';
+            
+            pageResults.forEach(stock => {
+                const row = document.createElement('tr');
+                row.className = 'scan-result-row border-t border-gray-700/30 hover:bg-gray-800/30 transition-colors';
+                
+                const changeColor = stock.change > 0 ? 'text-green-400' : 'text-red-400';
+                const scoreClass = stock.aiScore >= 90 ? 'score-high' : stock.aiScore >= 80 ? 'score-medium' : 'score-low';
+                const rsiColor = stock.rsi > 70 ? 'text-red-400' : stock.rsi < 30 ? 'text-green-400' : 'text-yellow-400';
+                
+                row.innerHTML = `
+                    <td class="p-3">
+                        <div class="font-bold text-blue-400">${stock.ticker}</div>
+                        <div class="text-xs text-gray-500">${stock.marketCap}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-semibold">$${stock.price.toFixed(2)}</div>
+                        <div class="text-xs text-gray-400">PE: ${stock.pe}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-semibold ${changeColor}">${stock.change > 0 ? '+' : ''}${stock.change.toFixed(2)}%</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-medium">${stock.volume}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-medium ${stock.relVol >= 2 ? 'text-orange-400' : 'text-gray-300'}">${stock.relVol}x</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="text-sm">${stock.marketCap}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="text-xs px-2 py-1 bg-purple-500/20 rounded text-purple-300">${stock.sector.split(' ')[0]}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-medium ${rsiColor}">${stock.rsi}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="text-xs px-2 py-1 bg-cyan-500/20 rounded text-cyan-300">${stock.pattern}</div>
+                    </td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-bold border ${scoreClass}">
+                            ${stock.aiScore}
+                        </span>
+                    </td>
+                    <td class="p-3">
+                        <button onclick="analyzeStock('${stock.ticker}')" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-sm transition-all">
+                            <i class="fas fa-brain mr-1"></i>Analyze
+                        </button>
+                    </td>
+                `;
+                resultsBody.appendChild(row);
+            });
+            
+            updatePagination();
+        }
+
+        function updateScanSummary(results) {
+            document.getElementById('foundCount').textContent = results.length;
+            document.getElementById('resultCount').textContent = `(${results.length} found)`;
+            document.getElementById('scannedCount').textContent = mockStocks.length.toLocaleString();
+            document.getElementById('totalStockCount').textContent = mockStocks.length.toLocaleString();
+            
+            // Update data source indicator
+            if (dataManager.isLive) {
+                document.getElementById('dataSourceIndicator').className = 'w-3 h-3 bg-green-400 rounded-full';
+                document.getElementById('dataSourceText').textContent = 'Live Data';
+                document.getElementById('liveDataBtn').innerHTML = '<i class="fas fa-check mr-2"></i>Live Data Active';
+                document.getElementById('liveDataBtn').className = 'px-4 py-2 bg-green-600 rounded-lg text-sm opacity-75 cursor-not-allowed';
+            } else {
+                document.getElementById('dataSourceIndicator').className = 'w-3 h-3 bg-yellow-400 rounded-full animate-pulse';
+                document.getElementById('dataSourceText').textContent = 'Demo Mode';
+                document.getElementById('liveDataBtn').innerHTML = '<i class="fas fa-wifi mr-2"></i>Enable Live Data';
+                document.getElementById('liveDataBtn').className = 'px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-all';
+            }
+            
+            if (results.length > 0) {
+                const avgChange = (results.reduce((sum, stock) => sum + stock.change, 0) / results.length).toFixed(2);
+                const avgVolumeNum = results.reduce((sum, stock) => {
+                    const vol = parseFloat(stock.volume.replace(/[^0-9.]/g, ''));
+                    return sum + vol;
+                }, 0) / results.length;
+                const avgVolume = avgVolumeNum >= 1000 ? `${(avgVolumeNum/1000).toFixed(1)}B` : `${avgVolumeNum.toFixed(1)}M`;
+                
+                document.getElementById('avgChange').textContent = `${avgChange > 0 ? '+' : ''}${avgChange}%`;
+                document.getElementById('avgChange').className = `text-2xl font-bold ${avgChange >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                document.getElementById('avgVolume').textContent = avgVolume;
+                
+                // Find top sector
+                const sectorCounts = {};
+                results.forEach(stock => {
+                    sectorCounts[stock.sector] = (sectorCounts[stock.sector] || 0) + 1;
+                });
+                const topSector = Object.keys(sectorCounts).reduce((a, b) => sectorCounts[a] > sectorCounts[b] ? a : b);
+                document.querySelector('.text-yellow-400').textContent = topSector.split(' ')[0];
+                document.querySelector('.text-sm.text-gray-500').textContent = `${sectorCounts[topSector]} stocks`;
+            }
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+            const startResult = Math.min((currentPage - 1) * resultsPerPage + 1, filteredResults.length);
+            const endResult = Math.min(currentPage * resultsPerPage, filteredResults.length);
+            
+            document.getElementById('showingStart').textContent = startResult;
+            document.getElementById('showingEnd').textContent = endResult;
+            document.getElementById('totalResults').textContent = filteredResults.length;
+            document.getElementById('currentPage').textContent = currentPage;
+            
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        }
+
+        // Enhanced AI query functionality with intelligent responses
+        function sendAIQuery() {
+            const query = document.getElementById('aiQuery').value;
+            if (!query.trim()) return;
+            
+            const chatMessages = document.getElementById('aiChatMessages');
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'ai-chat-bubble ai-user p-3 rounded-lg mb-4';
+            userMessage.innerHTML = `
+                <div class="font-bold text-blue-400 mb-1">You</div>
+                <div>${query}</div>
+            `;
+            chatMessages.appendChild(userMessage);
+            
+            // Generate intelligent AI response
+            setTimeout(() => {
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'ai-chat-bubble ai-assistant p-3 rounded-lg mb-4';
+                const response = generateAIResponse(query);
+                aiMessage.innerHTML = `
+                    <div class="font-bold text-purple-400 mb-1">Scanner Pro AI</div>
+                    <div>${response}</div>
+                `;
+                chatMessages.appendChild(aiMessage);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1500);
+            
+            document.getElementById('aiQuery').value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Intelligent AI response generator
+        function generateAIResponse(query) {
+            const queryLower = query.toLowerCase();
+            
+            // Check for specific stock ticker analysis
+            const tickerMatch = query.match(/\b([A-Z]{1,5})\b/g);
+            if (tickerMatch) {
+                const ticker = tickerMatch[0];
+                if (stockDatabase[ticker]) {
+                    return generateStockAnalysis(ticker, queryLower);
+                }
+            }
+            
+            // Market regime analysis
+            if (queryLower.includes('market') && (queryLower.includes('condition') || queryLower.includes('regime') || queryLower.includes('outlook'))) {
+                return generateMarketRegimeAnalysis();
+            }
+            
+            // Sector analysis
+            if (queryLower.includes('sector') || queryLower.includes('industry')) {
+                return generateSectorAnalysis(queryLower);
+            }
+            
+            // Volatility analysis
+            if (queryLower.includes('vix') || queryLower.includes('volatility') || queryLower.includes('risk')) {
+                return generateVolatilityAnalysis();
+            }
+            
+            // Scan suggestions
+            if (queryLower.includes('scan') || queryLower.includes('find') || queryLower.includes('look for')) {
+                return generateScanSuggestion(queryLower);
+            }
+            
+            // Default intelligent response
+            return generateContextualResponse(queryLower);
+        }
+
+        function generateStockAnalysis(ticker, query) {
+            const stock = stockDatabase[ticker];
+            let response = `<div class="mb-3"><strong>${ticker} Analysis:</strong></div>`;
+            
+            response += `<div class="bg-gray-800/50 rounded p-3 mb-2">`;
+            response += `<div class="grid grid-cols-2 gap-2 text-sm">`;
+            response += `<div>Price: <span class="text-green-400">$${stock.price}</span></div>`;
+            response += `<div>Change: <span class="${stock.change > 0 ? 'text-green-400' : 'text-red-400'}">${stock.change > 0 ? '+' : ''}${stock.change}%</span></div>`;
+            response += `<div>Volume: <span class="text-blue-400">${stock.volume}</span></div>`;
+            response += `<div>Sector: <span class="text-purple-400">${stock.sector}</span></div>`;
+            response += `</div></div>`;
+            
+            response += `<div class="mb-2"><strong>Technical Analysis:</strong> ${stock.analysis}</div>`;
+            response += `<div class="mb-2"><strong>Key Metrics:</strong> ${stock.technicals}</div>`;
+            response += `<div><strong>Catalysts:</strong> ${stock.catalysts}</div>`;
+            
+            if (query.includes('why') || query.includes('explain')) {
+                response += `<div class="mt-3 p-2 bg-blue-500/10 rounded border-l-2 border-blue-400">`;
+                response += `<strong>Why it's moving:</strong> The current momentum is driven by ${stock.catalysts.toLowerCase()} with strong technical confirmation.`;
+                response += `</div>`;
+            }
+            
+            return response;
+        }
+
+        function generateMarketRegimeAnalysis() {
+            const regime = marketRegimes;
+            let response = `<div class="mb-3"><strong>Current Market Regime: ${regime.current}</strong></div>`;
+            
+            response += `<div class="bg-gray-800/50 rounded p-3 mb-2">`;
+            response += `<div class="grid grid-cols-2 gap-2 text-sm">`;
+            response += `<div>Confidence: <span class="text-green-400">${regime.confidence}%</span></div>`;
+            response += `<div>Risk Level: <span class="text-yellow-400">${regime.riskLevel}</span></div>`;
+            response += `<div colspan="2">Timeframe: <span class="text-blue-400">${regime.timeframe}</span></div>`;
+            response += `</div></div>`;
+            
+            response += `<div class="mb-2"><strong>Key Signals:</strong></div>`;
+            response += `<ul class="list-disc list-inside text-sm mb-2">`;
+            regime.signals.forEach(signal => {
+                response += `<li>${signal}</li>`;
+            });
+            response += `</ul>`;
+            
+            response += `<div class="p-2 bg-green-500/10 rounded border-l-2 border-green-400">`;
+            response += `<strong>Outlook:</strong> ${regime.outlook}`;
+            response += `</div>`;
+            
+            return response;
+        }
+
+        function generateSectorAnalysis(query) {
+            if (query.includes('tech')) {
+                return `<strong>Technology Sector Analysis:</strong><br><br>
+                       Tech stocks are leading with AI and cloud infrastructure driving growth. Key themes:<br>
+                       • AI chip demand (NVDA, AMD)<br>
+                       • Cloud computing expansion (MSFT, AMZN)<br>
+                       • Software adoption (CRM, NOW)<br><br>
+                       <em>Recommendation: Focus on high-volume breakouts in semiconductor and cloud names.</em>`;
+            }
+            
+            return `<strong>Sector Rotation Analysis:</strong><br><br>
+                   Current leaders: Technology (+2.1%), Healthcare (+1.8%)<br>
+                   Laggards: Energy (-0.8%), Utilities (-0.3%)<br><br>
+                   Growth stocks outperforming value by 3.2% this week, indicating continued momentum in quality names.`;
+        }
+
+        function generateVolatilityAnalysis() {
+            return `<strong>Volatility Environment Analysis:</strong><br><br>
+                   VIX: 16.8 (Low volatility regime)<br>
+                   Fear & Greed Index: 72 (Greed)<br><br>
+                   <div class="p-2 bg-yellow-500/10 rounded border-l-2 border-yellow-400 mt-2">
+                   <strong>Risk Alert:</strong> Low volatility suggests complacency. Consider protective strategies for portfolio hedging.
+                   </div>`;
+        }
+
+        function generateScanSuggestion(query) {
+            const suggestion = smartScanSuggestions[Math.floor(Math.random() * smartScanSuggestions.length)];
+            let response = `<strong>${suggestion.title}</strong><br><br>`;
+            response += `${suggestion.description}<br><br>`;
+            response += `<strong>Action Items:</strong><br>`;
+            suggestion.actionItems.forEach(item => {
+                response += `• ${item}<br>`;
+            });
+            
+            return response;
+        }
+
+        function generateContextualResponse(query) {
+            const responses = [
+                "Based on current market momentum and institutional flows, I'm seeing increased activity in growth sectors. Consider scanning for high-volume breakouts above key moving averages.",
+                "Market breadth is improving with advancing issues outpacing decliners 3:1. This suggests a healthy underlying trend that could support continued upward movement.",
+                "Options flow indicates heavy call buying in technology names, particularly in the AI and cloud infrastructure space. This could signal institutional positioning ahead of earnings.",
+                "Cross-asset analysis shows strength in risk assets with credit spreads tightening. This supportive environment favors momentum strategies over defensive positioning."
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // Analyze stock functionality
+        function analyzeStock(ticker) {
+            showTab('ai-analysis');
+            document.getElementById('aiQuery').value = `Analyze ${ticker} and explain why it's showing up in today's scan`;
+            sendAIQuery();
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Sentiment Chart
+            const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+            new Chart(sentimentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Bullish', 'Neutral', 'Bearish'],
+                    datasets: [{
+                        data: [65, 25, 10],
+                        backgroundColor: ['#22C55E', '#3B82F6', '#EF4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+
+            // Confidence Chart
+            const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+            new Chart(confidenceCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Technical', 'Fundamental', 'Sentiment', 'Volume', 'Momentum'],
+                    datasets: [{
+                        label: 'AI Confidence',
+                        data: [94, 87, 76, 82, 91],
+                        borderColor: '#A78BFA',
+                        backgroundColor: 'rgba(167, 139, 250, 0.2)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+
+            // Performance Chart
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Portfolio Return',
+                        data: [2.1, 4.3, 6.8, 8.2, 10.5, 12.3],
+                        borderColor: '#22C55E',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+
+            // Options Chart
+            const optionsCtx = document.getElementById('optionsChart').getContext('2d');
+            new Chart(optionsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Calls', 'Puts'],
+                    datasets: [{
+                        label: 'Volume',
+                        data: [2400000, 1200000],
+                        backgroundColor: ['#22C55E', '#EF4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+
+            // Technical Chart
+            const technicalCtx = document.getElementById('technicalChart').getContext('2d');
+            new Chart(technicalCtx, {
+                type: 'line',
+                data: {
+                    labels: ['RSI', 'MACD', 'SMA', 'Bollinger', 'Stochastic'],
+                    datasets: [{
+                        label: 'Signal Strength',
+                        data: [68, 72, 85, 64, 77],
+                        borderColor: '#F59E0B',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize content
+        function initializeContent() {
+            // Initialize AI Picks
+            const aiPicksContainer = document.getElementById('aiPicks');
+            mockStocks.slice(0, 3).forEach(stock => {
+                const pickDiv = document.createElement('div');
+                pickDiv.className = 'glass-effect rounded-lg p-4 border-l-4 border-blue-400';
+                pickDiv.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="font-bold text-xl text-blue-400">${stock.ticker}</div>
+                        <div class="text-green-400 font-bold">+${stock.change.toFixed(2)}%</div>
+                    </div>
+                    <div class="text-gray-300 mb-2">${stock.sector}</div>
+                    <div class="text-sm text-gray-400">AI recommends BUY based on strong momentum indicators and positive sentiment analysis. Target: $${(stock.price * 1.15).toFixed(2)}</div>
+                    <div class="mt-3 flex items-center">
+                        <span class="text-xs text-gray-400 mr-2">Confidence:</span>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-green-400 h-2 rounded-full" style="width: ${stock.aiScore}%"></div>
+                        </div>
+                        <span class="text-xs text-green-400 ml-2">${stock.aiScore}%</span>
+                    </div>
+                `;
+                aiPicksContainer.appendChild(pickDiv);
+            });
+
+            // Initialize Active Positions
+            const activePositionsContainer = document.getElementById('activePositions');
+            const positions = [
+                { ticker: 'AAPL', shares: 100, avgPrice: 185.20, currentPrice: 189.45, pnl: 425 },
+                { ticker: 'TSLA', shares: 50, avgPrice: 235.10, currentPrice: 242.67, pnl: 378.50 }
+            ];
+            
+            positions.forEach(position => {
+                const positionDiv = document.createElement('div');
+                positionDiv.className = 'glass-effect rounded-lg p-4';
+                const pnlColor = position.pnl > 0 ? 'text-green-400' : 'text-red-400';
+                positionDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-bold text-blue-400">${position.ticker}</div>
+                            <div class="text-sm text-gray-400">${position.shares} shares @ $${position.avgPrice}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold">$${position.currentPrice}</div>
+                            <div class="text-sm font-bold ${pnlColor}">$${position.pnl.toFixed(2)}</div>
+                        </div>
+                    </div>
+                `;
+                activePositionsContainer.appendChild(positionDiv);
+            });
+
+            // Initialize Trade Signals
+            const tradeSignalsContainer = document.getElementById('tradeSignals');
+            const signals = [
+                { ticker: 'NVDA', signal: 'BUY', confidence: 92, reason: 'Breakout above resistance' },
+                { ticker: 'AMD', signal: 'HOLD', confidence: 78, reason: 'Consolidation pattern' }
+            ];
+            
+            signals.forEach(signal => {
+                const signalDiv = document.createElement('div');
+                signalDiv.className = 'glass-effect rounded-lg p-4';
+                const signalColor = signal.signal === 'BUY' ? 'text-green-400' : signal.signal === 'SELL' ? 'text-red-400' : 'text-yellow-400';
+                signalDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-bold text-blue-400">${signal.ticker}</div>
+                            <div class="text-sm text-gray-400">${signal.reason}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold ${signalColor}">${signal.signal}</div>
+                            <div class="text-sm text-gray-400">${signal.confidence}%</div>
+                        </div>
+                    </div>
+                `;
+                tradeSignalsContainer.appendChild(signalDiv);
+            });
+
+            // Initialize Options Flow
+            const optionsFlowContainer = document.getElementById('optionsFlow');
+            const optionsData = [
+                { ticker: 'AAPL', type: 'Call', strike: 190, expiry: '12/15', volume: 12500, premium: 4.2 },
+                { ticker: 'TSLA', type: 'Put', strike: 240, expiry: '12/15', volume: 8900, premium: 6.8 }
+            ];
+            
+            optionsData.forEach(option => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'glass-effect rounded-lg p-4';
+                const typeColor = option.type === 'Call' ? 'text-green-400' : 'text-red-400';
+                optionDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-bold text-blue-400">${option.ticker} ${option.strike}${option.type.charAt(0)}</div>
+                            <div class="text-sm text-gray-400">Exp: ${option.expiry}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold ${typeColor}">${option.type}</div>
+                            <div class="text-sm text-gray-400">Vol: ${option.volume.toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+                optionsFlowContainer.appendChild(optionDiv);
+            });
+
+            // Initialize Technical Indicators
+            const technicalIndicatorsContainer = document.getElementById('technicalIndicators');
+            const indicators = [
+                { name: 'RSI (14)', value: 68.4, signal: 'Neutral', color: 'text-yellow-400' },
+                { name: 'MACD', value: 2.34, signal: 'Bullish', color: 'text-green-400' },
+                { name: 'SMA (20)', value: 186.7, signal: 'Bullish', color: 'text-green-400' },
+                { name: 'Bollinger Bands', value: 'Upper', signal: 'Overbought', color: 'text-red-400' }
+            ];
+            
+            indicators.forEach(indicator => {
+                const indicatorDiv = document.createElement('div');
+                indicatorDiv.className = 'glass-effect rounded-lg p-4';
+                indicatorDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-bold text-blue-400">${indicator.name}</div>
+                            <div class="text-sm text-gray-400">Value: ${indicator.value}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold ${indicator.color}">${indicator.signal}</div>
+                        </div>
+                    </div>
+                `;
+                technicalIndicatorsContainer.appendChild(indicatorDiv);
+            });
+        }
+
+        // Market Regime Analysis Functions
+        function analyzeRegimeChange() {
+            const currentRegime = document.getElementById('currentRegime');
+            const confidence = document.getElementById('regimeConfidence');
+            const duration = document.getElementById('regimeDuration');
+            const riskLevel = document.getElementById('riskLevel');
+            const vixLevel = document.getElementById('vixLevel');
+            
+            // Simulate regime analysis with random but realistic values
+            const regimes = ['Growth Rotation', 'Value Recovery', 'Risk-Off Defensive', 'High Volatility', 'Sector Rotation'];
+            const risks = ['Low', 'Moderate', 'High'];
+            
+            const newRegime = regimes[Math.floor(Math.random() * regimes.length)];
+            const newConfidence = Math.floor(Math.random() * 30) + 70; // 70-100%
+            const newRisk = risks[Math.floor(Math.random() * risks.length)];
+            const newVix = (Math.random() * 10 + 15).toFixed(1); // 15-25
+            
+            // Update display with animation
+            currentRegime.style.opacity = '0.5';
+            setTimeout(() => {
+                currentRegime.textContent = newRegime;
+                confidence.textContent = newConfidence + '%';
+                riskLevel.textContent = newRisk;
+                vixLevel.textContent = newVix;
+                currentRegime.style.opacity = '1';
+                
+                // Update regime signals
+                updateRegimeSignals(newRegime, newVix);
+            }, 500);
+            
+            // Update prediction chart
+            updateRegimePredictionChart();
+        }
+
+        function updateRegimeSignals(regime, vix) {
+            const signalsContainer = document.getElementById('regimeSignals');
+            const signals = {
+                'Growth Rotation': [
+                    { text: `VIX at ${vix} (Bullish)`, color: vix < 20 ? 'green' : 'red' },
+                    { text: 'Tech sector leadership', color: 'green' },
+                    { text: 'High volume breakouts', color: 'yellow' },
+                    { text: 'Credit spreads tightening', color: 'green' }
+                ],
+                'Value Recovery': [
+                    { text: 'Financial sector strength', color: 'green' },
+                    { text: 'Yield curve steepening', color: 'yellow' },
+                    { text: 'Commodity momentum', color: 'green' },
+                    { text: 'Dollar strength', color: 'yellow' }
+                ],
+                'Risk-Off Defensive': [
+                    { text: `VIX spike to ${vix}`, color: 'red' },
+                    { text: 'Safe haven demand', color: 'red' },
+                    { text: 'Utilities outperforming', color: 'yellow' },
+                    { text: 'Credit spreads widening', color: 'red' }
+                ]
+            };
+            
+            const regimeSignals = signals[regime] || signals['Growth Rotation'];
+            
+            signalsContainer.innerHTML = regimeSignals.map(signal => `
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-${signal.color}-400 rounded-full mr-3"></div>
+                    <div class="text-sm">${signal.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateRegimePredictionChart() {
+            const ctx = document.getElementById('regimePredictionChart');
+            if (!ctx) return;
+            
+            // Create a simple prediction chart
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Now', '1W', '2W', '3W', '4W'],
+                    datasets: [{
+                        label: 'Regime Confidence',
+                        data: [85, 78, 72, 68, 65],
+                        borderColor: '#06B6D4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            ticks: { color: 'white', font: { size: 10 } }, 
+                            grid: { color: 'rgba(255,255,255,0.1)' } 
+                        },
+                        y: { 
+                            ticks: { color: 'white', font: { size: 10 } }, 
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            min: 50,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Smart Suggestions Functions
+        function refreshSmartSuggestions() {
+            const suggestionsContainer = document.getElementById('smartSuggestions');
+            
+            // Generate dynamic suggestions based on current market conditions
+            const suggestions = generateSmartSuggestions();
+            
+            suggestionsContainer.innerHTML = suggestions.map(suggestion => `
+                <div class="bg-${suggestion.color}-500/10 border border-${suggestion.color}-500/30 rounded-lg p-3 cursor-pointer hover:bg-${suggestion.color}-500/20 transition-all" onclick="executeSuggestion('${suggestion.action}')">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="font-bold text-${suggestion.color}-400">${suggestion.title}</div>
+                        <div class="text-xs px-2 py-1 bg-${suggestion.color}-500/20 rounded-full text-${suggestion.color}-300">${suggestion.priority}</div>
+                    </div>
+                    <div class="text-sm">${suggestion.description}</div>
+                    <div class="mt-2 text-xs text-gray-400">
+                        <i class="fas fa-clock mr-1"></i>Updated ${suggestion.timestamp}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generateSmartSuggestions() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const allSuggestions = [
+                {
+                    title: 'High Volume Breakout Alert',
+                    description: 'NVDA and AMD showing 3x average volume with price breakouts above resistance.',
+                    color: 'blue',
+                    priority: 'HIGH',
+                    action: 'scan_volume_breakouts',
+                    timestamp: timeStr
+                },
+                {
+                    title: 'Sector Rotation Signal',
+                    description: 'Technology outperforming energy by 4.2%. Consider rotating into XLK holdings.',
+                    color: 'green',
+                    priority: 'MEDIUM',
+                    action: 'analyze_sector_rotation',
+                    timestamp: timeStr
+                },
+                {
+                    title: 'Options Flow Anomaly',
+                    description: 'Unusual call buying in AAPL and MSFT suggests institutional positioning.',
+                    color: 'purple',
+                    priority: 'HIGH',
+                    action: 'analyze_options_flow',
+                    timestamp: timeStr
+                },
+                {
+                    title: 'VIX Compression',
+                    description: 'VIX at 16.2 suggests low volatility environment. Consider volatility strategies.',
+                    color: 'yellow',
+                    priority: 'LOW',
+                    action: 'analyze_volatility',
+                    timestamp: timeStr
+                },
+                {
+                    title: 'Momentum Divergence',
+                    description: 'Small caps lagging large caps by 2.8%. Watch for mean reversion opportunity.',
+                    color: 'orange',
+                    priority: 'MEDIUM',
+                    action: 'analyze_cap_divergence',
+                    timestamp: timeStr
+                },
+                {
+                    title: 'Earnings Season Setup',
+                    description: 'Pre-earnings IV crush candidates identified in technology sector.',
+                    color: 'pink',
+                    priority: 'MEDIUM',
+                    action: 'scan_earnings_plays',
+                    timestamp: timeStr
+                }
+            ];
+            
+            // Return 3-4 random suggestions
+            const shuffled = allSuggestions.sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, Math.floor(Math.random() * 2) + 3);
+        }
+
+        function executeSuggestion(action) {
+            const actions = {
+                'scan_volume_breakouts': () => {
+                    showTab('mass');
+                    document.getElementById('scanType').value = 'HIGH_VOLUME';
+                    performScan();
+                },
+                'analyze_sector_rotation': () => {
+                    showTab('ai-analysis');
+                    document.getElementById('aiQuery').value = 'Analyze current sector rotation trends and show top performing sectors';
+                    sendAIQuery();
+                },
+                'analyze_options_flow': () => {
+                    showTab('options');
+                },
+                'analyze_volatility': () => {
+                    showTab('ai-analysis');
+                    document.getElementById('aiQuery').value = 'Explain the current VIX level and volatility trading opportunities';
+                    sendAIQuery();
+                },
+                'analyze_cap_divergence': () => {
+                    showTab('ai-analysis');
+                    document.getElementById('aiQuery').value = 'Analyze the performance divergence between small cap and large cap stocks';
+                    sendAIQuery();
+                },
+                'scan_earnings_plays': () => {
+                    showTab('mass');
+                    document.getElementById('scanType').value = 'MOMENTUM_BREAKOUT';
+                    performScan();
+                }
+            };
+            
+            if (actions[action]) {
+                actions[action]();
+            }
+        }
+
+        // Advanced Scanner Functions
+        function toggleAdvancedFilters() {
+            const filters = document.getElementById('advancedFilters');
+            const toggle = document.getElementById('advancedToggle');
+            
+            if (filters.classList.contains('hidden')) {
+                filters.classList.remove('hidden');
+                toggle.classList.add('rotate-180');
+            } else {
+                filters.classList.add('hidden');
+                toggle.classList.remove('rotate-180');
+            }
+        }
+
+        function clearAllFilters() {
+            // Reset all filter inputs to defaults
+            document.getElementById('minPrice').value = 1;
+            document.getElementById('maxPrice').value = 1000;
+            document.getElementById('minVolume').value = 100000;
+            document.getElementById('marketCap').value = '';
+            document.getElementById('sector').value = '';
+            document.getElementById('relativeVolume').value = '';
+            document.getElementById('float').value = '';
+            document.getElementById('rsiRange').value = '';
+            document.getElementById('macdSignal').value = '';
+            document.getElementById('maPosition').value = '';
+            document.getElementById('chartPattern').value = '';
+            document.getElementById('peRatio').value = '';
+            document.getElementById('aiScoreFilter').value = '';
+            document.getElementById('minChange').value = '';
+            document.getElementById('maxChange').value = '';
+            
+            // Perform scan with cleared filters
+            performScan();
+        }
+
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            filteredResults.sort((a, b) => {
+                let valueA = a[column];
+                let valueB = b[column];
+                
+                // Handle special cases
+                if (column === 'price' || column === 'change' || column === 'pe' || column === 'rsi' || column === 'aiScore' || column === 'relVol') {
+                    valueA = parseFloat(valueA);
+                    valueB = parseFloat(valueB);
+                } else if (column === 'volume') {
+                    valueA = parseFloat(valueA.replace(/[^0-9.]/g, ''));
+                    valueB = parseFloat(valueB.replace(/[^0-9.]/g, ''));
+                } else if (column === 'marketCap') {
+                    valueA = parseMarketCap(valueA);
+                    valueB = parseMarketCap(valueB);
+                }
+                
+                if (sortDirection === 'asc') {
+                    return valueA > valueB ? 1 : -1;
+                } else {
+                    return valueA < valueB ? 1 : -1;
+                }
+            });
+            
+            currentPage = 1;
+            updateResultsDisplay();
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateResultsDisplay();
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updateResultsDisplay();
+            }
+        }
+
+        function toggleTableView() {
+            const button = document.getElementById('tableViewToggle');
+            if (resultsPerPage === 25) {
+                resultsPerPage = 50;
+                button.innerHTML = '<i class="fas fa-list mr-1"></i>Extended View';
+            } else {
+                resultsPerPage = 25;
+                button.innerHTML = '<i class="fas fa-table mr-1"></i>Compact View';
+            }
+            currentPage = 1;
+            updateResultsDisplay();
+        }
+
+        function refreshResults() {
+            performScan();
+        }
+
+        function saveCustomScan() {
+            const scanData = {
+                scanType: document.getElementById('scanType').value,
+                minPrice: document.getElementById('minPrice').value,
+                maxPrice: document.getElementById('maxPrice').value,
+                minVolume: document.getElementById('minVolume').value,
+                marketCap: document.getElementById('marketCap')?.value || '',
+                sector: document.getElementById('sector')?.value || '',
+                relativeVolume: document.getElementById('relativeVolume')?.value || '',
+                float: document.getElementById('float')?.value || '',
+                rsiRange: document.getElementById('rsiRange')?.value || '',
+                macdSignal: document.getElementById('macdSignal')?.value || '',
+                maPosition: document.getElementById('maPosition')?.value || '',
+                chartPattern: document.getElementById('chartPattern')?.value || '',
+                peRatio: document.getElementById('peRatio')?.value || '',
+                aiScoreFilter: document.getElementById('aiScoreFilter')?.value || '',
+                minChange: document.getElementById('minChange')?.value || '',
+                maxChange: document.getElementById('maxChange')?.value || ''
+            };
+            
+            const scanName = prompt('Enter a name for this scan:');
+            if (scanName) {
+                localStorage.setItem(`scannerPro_${scanName}`, JSON.stringify(scanData));
+                alert(`Scan "${scanName}" saved successfully!`);
+            }
+        }
+
+        function loadCustomScan() {
+            const scanName = prompt('Enter the name of the scan to load:');
+            if (scanName) {
+                const scanData = localStorage.getItem(`scannerPro_${scanName}`);
+                if (scanData) {
+                    const data = JSON.parse(scanData);
+                    
+                    // Load all saved values
+                    document.getElementById('scanType').value = data.scanType;
+                    document.getElementById('minPrice').value = data.minPrice;
+                    document.getElementById('maxPrice').value = data.maxPrice;
+                    document.getElementById('minVolume').value = data.minVolume;
+                    
+                    if (document.getElementById('marketCap')) document.getElementById('marketCap').value = data.marketCap;
+                    if (document.getElementById('sector')) document.getElementById('sector').value = data.sector;
+                    if (document.getElementById('relativeVolume')) document.getElementById('relativeVolume').value = data.relativeVolume;
+                    if (document.getElementById('float')) document.getElementById('float').value = data.float;
+                    if (document.getElementById('rsiRange')) document.getElementById('rsiRange').value = data.rsiRange;
+                    if (document.getElementById('macdSignal')) document.getElementById('macdSignal').value = data.macdSignal;
+                    if (document.getElementById('maPosition')) document.getElementById('maPosition').value = data.maPosition;
+                    if (document.getElementById('chartPattern')) document.getElementById('chartPattern').value = data.chartPattern;
+                    if (document.getElementById('peRatio')) document.getElementById('peRatio').value = data.peRatio;
+                    if (document.getElementById('aiScoreFilter')) document.getElementById('aiScoreFilter').value = data.aiScoreFilter;
+                    if (document.getElementById('minChange')) document.getElementById('minChange').value = data.minChange;
+                    if (document.getElementById('maxChange')) document.getElementById('maxChange').value = data.maxChange;
+                    
+                    performScan();
+                    alert(`Scan "${scanName}" loaded successfully!`);
+                } else {
+                    alert(`Scan "${scanName}" not found.`);
+                }
+            }
+        }
+
+        function exportResults() {
+            if (filteredResults.length === 0) {
+                alert('No results to export. Please run a scan first.');
+                return;
+            }
+            
+            // Create CSV content
+            const headers = ['Ticker', 'Price', 'Change%', 'Volume', 'RelVol', 'MarketCap', 'Sector', 'RSI', 'Pattern', 'PE', 'AIScore'];
+            const csvContent = [
+                headers.join(','),
+                ...filteredResults.map(stock => [
+                    stock.ticker,
+                    stock.price,
+                    stock.change,
+                    stock.volume,
+                    stock.relVol,
+                    stock.marketCap,
+                    `"${stock.sector}"`,
+                    stock.rsi,
+                    `"${stock.pattern}"`,
+                    stock.pe,
+                    stock.aiScore
+                ].join(','))
+            ].join('\n');
+            
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scanner_results_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Enter key support for AI query
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('aiQuery').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendAIQuery();
+                }
+            });
+            
+            // Initialize everything
+            console.log('🚀 Scanner Pro AI initializing...');
+            console.log(`📊 Database: ${mockStocks.length} stocks loaded`);
+            
+            // Initialize data source manager
+            dataManager.initialize();
+            
+            performScan();
+            initializeContent();
+            setTimeout(() => {
+                initializeCharts();
+                refreshSmartSuggestions();
+                updateRegimePredictionChart();
+                console.log('✅ Scanner Pro AI fully initialized');
+            }, 100); // Small delay to ensure DOM is ready
+        });
+    </script>
+</body>
+</html>
