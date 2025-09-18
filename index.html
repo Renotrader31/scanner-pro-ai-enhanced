@@ -1027,10 +1027,22 @@
             FMP_API_KEY: 'm2XfxOS0sZxs6hLEY5yRzUgDyp5Dur4V', // Your FMP API key
             FMP_BASE_URL: 'https://financialmodelingprep.com/api/v3',
             USE_LIVE_DATA: true, // ENABLED for live data
-            // Auto-detect environment - use relative URLs for production deployment
-            PROXY_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname.includes('e2b.dev') 
-                ? 'https://8001-is1pytsu7vtueafbe0oix-6532622b.e2b.dev'  // Sandbox
-                : '', // Production - relative URLs for Vercel functions
+            // Smart environment detection
+            PROXY_BASE_URL: (function() {
+                const hostname = window.location.hostname;
+                console.log('🔍 Detecting environment, hostname:', hostname);
+                
+                if (hostname === 'localhost' || hostname.includes('e2b.dev')) {
+                    console.log('📡 Using SANDBOX mode');
+                    return 'https://8001-is1pytsu7vtueafbe0oix-6532622b.e2b.dev';
+                } else if (hostname.includes('vercel.app') || hostname.includes('netlify.app')) {
+                    console.log('🌐 Using PRODUCTION mode (Vercel/Netlify)');
+                    return window.location.origin; // Use same domain
+                } else {
+                    console.log('🌐 Using PRODUCTION mode (custom domain)');
+                    return window.location.origin;
+                }
+            })()
             WEBSOCKET_URL: 'wss://websockets.financialmodelingprep.com',
             UPDATE_INTERVAL: 5000, // 5 seconds for live updates
             MAX_BATCH_SIZE: 100 // API batch request size
@@ -1121,12 +1133,19 @@
                 try {
                     console.log('🔄 Fetching live data via API proxy...');
                     console.log('🔗 Proxy URL:', API_CONFIG.PROXY_BASE_URL);
+                    console.log('🌐 Full test URL:', `${API_CONFIG.PROXY_BASE_URL}/api/test`);
                     
                     // First test the proxy connection
+                    console.log('📡 Testing connection to:', `${API_CONFIG.PROXY_BASE_URL}/api/test`);
                     const testResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
                     
                     if (!testResponse.ok) {
-                        throw new Error(`Proxy test failed: ${testResponse.status}`);
+                        console.error('❌ Test response failed:', {
+                            status: testResponse.status,
+                            statusText: testResponse.statusText,
+                            url: testResponse.url
+                        });
+                        throw new Error(`Proxy test failed: ${testResponse.status} ${testResponse.statusText}`);
                     }
                     
                     const testData = await testResponse.json();
@@ -1164,24 +1183,29 @@
                 } catch (error) {
                     console.error('❌ Live data fetch error:', error);
                     
-                    // Try fallback FMP API endpoint
+                    // Try direct FMP API as ultimate fallback
                     try {
-                        console.log('🔄 Trying fallback FMP connection...');
-                        const fallbackResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/quote/AAPL`);
+                        console.log('🔄 Trying DIRECT FMP API fallback...');
+                        const directUrl = `https://financialmodelingprep.com/api/v3/quote/AAPL,MSFT,NVDA,GOOGL,TSLA?apikey=${API_CONFIG.FMP_API_KEY}`;
+                        console.log('🌐 Direct FMP URL:', directUrl);
+                        const fallbackResponse = await fetch(directUrl);
                         
                         if (fallbackResponse.ok) {
                             const fallbackData = await fallbackResponse.json();
-                            console.log('✅ Fallback FMP API working:', fallbackData);
+                            console.log('✅ DIRECT FMP API working:', fallbackData);
                             
-                            if (fallbackData.status === 'success') {
-                                const liveData = [{
-                                    ticker: 'AAPL',
-                                    price: fallbackData.quote.price,
-                                    change: fallbackData.quote.change,
-                                    volume: this.formatVolume(fallbackData.quote.volume),
+                            if (Array.isArray(fallbackData) && fallbackData.length > 0) {
+                                const liveData = fallbackData.map(stock => ({
+                                    ticker: stock.symbol,
+                                    price: stock.price,
+                                    change: stock.changesPercentage,
+                                    volume: this.formatVolume(stock.volume),
+                                    market_cap: stock.marketCap,
+                                    pe: stock.pe,
                                     timestamp: new Date().toLocaleTimeString()
-                                }];
+                                }));
                                 
+                                console.log(`✅ Direct FMP: Got ${liveData.length} stocks`);
                                 this.updateStockDatabase(liveData);
                                 return liveData;
                             }
