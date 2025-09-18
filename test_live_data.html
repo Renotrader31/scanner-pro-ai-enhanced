@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Data Test</title>
+    <style>
+        body { font-family: monospace; background: #1a1a1a; color: #fff; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        #output { background: #333; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Live Data Integration Test</h1>
+    
+    <div>
+        <button onclick="testProxyHealth()">Test API Proxy Health</button>
+        <button onclick="testSingleQuote()">Test Single Quote (AAPL)</button>
+        <button onclick="testBatchQuotes()">Test Batch Quotes</button>
+        <button onclick="clearOutput()">Clear Output</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script>
+        const API_CONFIG = {
+            PROXY_BASE_URL: 'https://8001-ivkoqyg1hwsv2ro9ik8am-6532622b.e2b.dev'
+        };
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${timestamp}] ${message}`;
+            output.appendChild(div);
+            console.log(message);
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        async function testProxyHealth() {
+            log('🔄 Testing API Proxy Health...', 'info');
+            try {
+                const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Proxy Health: ${data.message}`, 'success');
+                    log(`📋 Available endpoints: ${data.endpoints.join(', ')}`, 'info');
+                } else {
+                    log(`❌ Proxy Health Failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Proxy Health Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSingleQuote() {
+            log('🔄 Testing Single Quote (AAPL)...', 'info');
+            try {
+                const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/quote/AAPL`);
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    const quote = data.quote;
+                    log(`✅ AAPL Quote: $${quote.price} (${quote.change}%) Vol: ${quote.volume}`, 'success');
+                } else {
+                    log(`❌ Quote Failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Quote Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testBatchQuotes() {
+            log('🔄 Testing Batch Quotes (AAPL, MSFT, NVDA)...', 'info');
+            try {
+                const tickers = 'AAPL,MSFT,NVDA';
+                const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/batch-quotes?tickers=${tickers}`);
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    log(`✅ Batch Quotes: ${data.count} stocks received`, 'success');
+                    data.quotes.forEach(quote => {
+                        log(`📊 ${quote.ticker}: $${quote.price} (${quote.change}%)`, 'success');
+                    });
+                } else {
+                    log(`❌ Batch Failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Batch Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run health check on load
+        window.onload = function() {
+            log('🚀 Live Data Test Page Loaded', 'info');
+            testProxyHealth();
+        };
+    </script>
+</body>
+</html>

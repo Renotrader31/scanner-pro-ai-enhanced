@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Data Issue Debug Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-blue-400 mb-6">🔬 Live Data Issue Debug Tool</h1>
+        
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-green-400 mb-4">Step-by-Step Analysis</h2>
+            <div class="space-y-4">
+                <button onclick="testStep1()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-bold">
+                    Step 1: Check Mock Database Content
+                </button>
+                <button onclick="testStep2()" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold">
+                    Step 2: Fetch Live Data from API
+                </button>
+                <button onclick="testStep3()" class="w-full bg-yellow-600 hover:bg-yellow-700 py-3 rounded-lg font-bold">
+                    Step 3: Test updateStockDatabase Function
+                </button>
+                <button onclick="testStep4()" class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-bold">
+                    Step 4: Check Scanner Display Data
+                </button>
+                <button onclick="testFull()" class="w-full bg-red-600 hover:bg-red-700 py-3 rounded-lg font-bold">
+                    🚀 Full Analysis (All Steps)
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-bold text-yellow-400 mb-4">📊 Analysis Results</h2>
+            <div id="results" class="bg-gray-900 p-4 rounded-lg font-mono text-sm overflow-auto max-h-96">
+                Click a test button above to begin analysis...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_CONFIG = {
+            USE_LIVE_DATA: false,
+            PROXY_BASE_URL: 'http://localhost:8001'
+        };
+
+        let results = document.getElementById('results');
+        
+        function log(message, color = 'white') {
+            const timestamp = new Date().toLocaleTimeString();
+            results.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function clear() {
+            results.innerHTML = '';
+        }
+
+        async function testStep1() {
+            clear();
+            log('🔄 Step 1: Analyzing Mock Database Content', 'cyan');
+            
+            try {
+                // Open main app in iframe to access its data
+                const response = await fetch('/');
+                const html = await response.text();
+                
+                log('✅ Main app accessible', 'green');
+                log('🔄 Attempting to access mockStocks via window object...', 'yellow');
+                
+                // Try to access parent window data
+                if (window.parent && window.parent.mockStocks) {
+                    const mockStocks = window.parent.mockStocks;
+                    log(`📊 Found mockStocks with ${mockStocks.length} stocks`, 'green');
+                    
+                    // Check for key tickers
+                    const keyTickers = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'TSLA', 'META', 'AMZN', 'NFLX'];
+                    keyTickers.forEach(ticker => {
+                        const stock = mockStocks.find(s => s.ticker === ticker);
+                        if (stock) {
+                            log(`✅ ${ticker}: $${stock.price} (${stock.change > 0 ? '+' : ''}${stock.change}%)`, 'lightgreen');
+                        } else {
+                            log(`❌ ${ticker}: Not found in mockStocks`, 'red');
+                        }
+                    });
+                } else {
+                    log('❌ Cannot access mockStocks from parent window', 'red');
+                    log('🔄 Trying alternative method...', 'yellow');
+                    
+                    // Alternative: Create our own mock data simulation
+                    log('📊 Simulating mock database structure...', 'orange');
+                    log('Expected structure: {ticker, price, change, volume, sector, ...}', 'gray');
+                }
+                
+            } catch (error) {
+                log(`❌ Error in Step 1: ${error.message}`, 'red');
+            }
+        }
+
+        async function testStep2() {
+            clear();
+            log('🔄 Step 2: Testing Live API Data Fetch', 'cyan');
+            
+            try {
+                // Test proxy health
+                log('🔄 Testing API proxy health...', 'yellow');
+                const healthResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
+                const healthData = await healthResponse.json();
+                log(`✅ Proxy health: ${JSON.stringify(healthData)}`, 'green');
+                
+                // Test batch quotes (same call as enableLiveData)
+                log('🔄 Fetching live data batch...', 'yellow');
+                const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX';
+                const batchResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/batch-quotes?tickers=${tickers}`);
+                const batchData = await batchResponse.json();
+                
+                log(`✅ Live data received: ${batchData.length} stocks`, 'green');
+                
+                // Analyze live data structure
+                batchData.forEach(stock => {
+                    log(`📈 ${stock.ticker}: $${stock.price} (${stock.change > 0 ? '+' : ''}${stock.change}%) Vol: ${stock.volume}`, 'lightblue');
+                });
+                
+                // Store for next steps
+                window.debugLiveData = batchData;
+                log('💾 Live data stored for next steps', 'purple');
+                
+            } catch (error) {
+                log(`❌ Error in Step 2: ${error.message}`, 'red');
+            }
+        }
+
+        async function testStep3() {
+            clear();
+            log('🔄 Step 3: Testing updateStockDatabase Logic', 'cyan');
+            
+            if (!window.debugLiveData) {
+                log('❌ No live data available. Run Step 2 first.', 'red');
+                return;
+            }
+            
+            try {
+                log('🔄 Simulating updateStockDatabase function...', 'yellow');
+                
+                // Simulate mockStocks array
+                const mockStocks = [
+                    {ticker: 'AAPL', price: 189.50, change: 2.34, volume: '45.2M'},
+                    {ticker: 'NVDA', price: 421.18, change: 8.45, volume: '52.1M'},
+                    {ticker: 'TSLA', price: 244.32, change: -1.23, volume: '98.7M'},
+                    {ticker: 'MSFT', price: 338.11, change: 1.89, volume: '28.4M'}
+                ];
+                
+                log(`📊 Mock database before: ${mockStocks.length} stocks`, 'gray');
+                mockStocks.forEach(stock => {
+                    log(`  📊 ${stock.ticker}: $${stock.price} (${stock.change > 0 ? '+' : ''}${stock.change}%)`, 'gray');
+                });
+                
+                // Simulate update process
+                log('🔄 Updating with live data...', 'yellow');
+                let updatedCount = 0;
+                
+                window.debugLiveData.forEach(liveStock => {
+                    const existingStock = mockStocks.find(stock => stock.ticker === liveStock.ticker);
+                    if (existingStock) {
+                        log(`📈 Updating ${liveStock.ticker}: $${existingStock.price} → $${liveStock.price} (${liveStock.change > 0 ? '+' : ''}${liveStock.change}%)`, 'lightgreen');
+                        existingStock.price = liveStock.price;
+                        existingStock.change = parseFloat(liveStock.change);
+                        existingStock.volume = liveStock.volume;
+                        updatedCount++;
+                    } else {
+                        log(`⚠️ Stock ${liveStock.ticker} not found in mock database`, 'orange');
+                    }
+                });
+                
+                log(`✅ Updated ${updatedCount} stocks in simulation`, 'green');
+                
+                log('📊 Mock database after update:', 'gray');
+                mockStocks.forEach(stock => {
+                    log(`  📊 ${stock.ticker}: $${stock.price} (${stock.change > 0 ? '+' : ''}${stock.change}%)`, 'lightgreen');
+                });
+                
+            } catch (error) {
+                log(`❌ Error in Step 3: ${error.message}`, 'red');
+            }
+        }
+
+        async function testStep4() {
+            clear();
+            log('🔄 Step 4: Checking Scanner Display Logic', 'cyan');
+            
+            try {
+                log('🔄 Opening main scanner in new window to check display...', 'yellow');
+                
+                // Open main app in popup
+                const popup = window.open('/', 'scanner', 'width=1200,height=800');
+                
+                setTimeout(() => {
+                    try {
+                        if (popup && popup.mockStocks) {
+                            log(`✅ Scanner window accessed, ${popup.mockStocks.length} stocks found`, 'green');
+                            
+                            // Check current scan results
+                            if (popup.filteredResults) {
+                                log(`📊 Current scan results: ${popup.filteredResults.length} stocks`, 'lightblue');
+                                
+                                popup.filteredResults.slice(0, 5).forEach(stock => {
+                                    log(`  📈 ${stock.ticker}: $${stock.price} (${stock.change > 0 ? '+' : ''}${stock.change}%)`, 'lightblue');
+                                });
+                            } else {
+                                log('❌ No filteredResults found in scanner', 'red');
+                            }
+                        } else {
+                            log('❌ Cannot access scanner window data', 'red');
+                        }
+                    } catch (error) {
+                        log(`❌ Error accessing scanner window: ${error.message}`, 'red');
+                    }
+                }, 2000);
+                
+                log('⏳ Waiting for scanner window to load... (check in 2 seconds)', 'orange');
+                
+            } catch (error) {
+                log(`❌ Error in Step 4: ${error.message}`, 'red');
+            }
+        }
+
+        async function testFull() {
+            clear();
+            log('🚀 Starting Full Analysis...', 'cyan');
+            
+            await testStep1();
+            log('\n' + '='.repeat(50) + '\n', 'gray');
+            
+            await testStep2();
+            log('\n' + '='.repeat(50) + '\n', 'gray');
+            
+            await testStep3();
+            log('\n' + '='.repeat(50) + '\n', 'gray');
+            
+            await testStep4();
+            
+            log('\n🎯 ANALYSIS COMPLETE! Check results above for issues.', 'lime');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Data Debug Test</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            background: #1a1a1a; 
+            color: #fff; 
+            padding: 20px; 
+            line-height: 1.6;
+        }
+        .debug-section {
+            background: #333; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        .warning { color: #ff9800; }
+    </style>
+</head>
+<body>
+    <h1>🔬 Live Data Debug Test</h1>
+    
+    <div class="debug-section">
+        <h2>🧪 Direct API Proxy Test</h2>
+        <button onclick="testDirectProxy()" style="padding: 10px; margin: 5px; background: #4CAF50; color: white; border: none; cursor: pointer;">Test Direct API Proxy</button>
+        <div id="proxyResults"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>🔍 Configuration Check</h2>
+        <div id="configResults"></div>
+    </div>
+
+    <script>
+        // API Configuration (matching main app)
+        const API_CONFIG = {
+            POLYGON_API_KEY: '75rlu6cWGNnIqqR_x8M384YUjBgGk6kT',
+            POLYGON_BASE_URL: 'https://api.polygon.io',
+            FMP_API_KEY: 'm2XfxOS0sZxs6hLEY5yRzUgDyp5Dur4V',
+            FMP_BASE_URL: 'https://financialmodelingprep.com/api',
+            USE_LIVE_DATA: true,
+            PROXY_BASE_URL: 'https://8001-ivkoqyg1hwsv2ro9ik8am-6532622b.e2b.dev',
+            WEBSOCKET_URL: 'wss://socket.polygon.io/stocks',
+            UPDATE_INTERVAL: 5000,
+            MAX_BATCH_SIZE: 100
+        };
+
+        function log(message, containerId, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            console.log(message);
+        }
+
+        async function testDirectProxy() {
+            const containerId = 'proxyResults';
+            document.getElementById(containerId).innerHTML = '';
+            
+            log('🔄 Testing direct API proxy connection...', containerId, 'info');
+            
+            try {
+                // Test 1: Health check
+                log('📡 Step 1: Testing proxy health...', containerId, 'info');
+                const healthResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
+                const healthData = await healthResponse.json();
+                
+                if (healthResponse.ok) {
+                    log(`✅ Health check: ${healthData.message}`, containerId, 'success');
+                } else {
+                    throw new Error(`Health check failed: ${healthResponse.status}`);
+                }
+                
+                // Test 2: Single quote
+                log('📊 Step 2: Testing single stock quote...', containerId, 'info');
+                const quoteResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/quote/AAPL`);
+                const quoteData = await quoteResponse.json();
+                
+                if (quoteResponse.ok && quoteData.status === 'success') {
+                    const quote = quoteData.quote;
+                    log(`✅ AAPL Quote: $${quote.price} (${quote.change}%) Vol: ${quote.volume}`, containerId, 'success');
+                } else {
+                    throw new Error(`Quote failed: ${quoteData.message || 'Unknown error'}`);
+                }
+                
+                // Test 3: Batch quotes
+                log('📈 Step 3: Testing batch quotes...', containerId, 'info');
+                const batchResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/batch-quotes?tickers=AAPL,MSFT,NVDA`);
+                const batchData = await batchResponse.json();
+                
+                if (batchResponse.ok && batchData.status === 'success') {
+                    log(`✅ Batch quotes: ${batchData.count} stocks received`, containerId, 'success');
+                    batchData.quotes.forEach(quote => {
+                        log(`📊 ${quote.ticker}: $${quote.price} (${quote.change}%)`, containerId, 'success');
+                    });
+                } else {
+                    throw new Error(`Batch failed: ${batchData.message || 'Unknown error'}`);
+                }
+                
+                log('🎉 All API proxy tests passed!', containerId, 'success');
+                
+            } catch (error) {
+                log(`❌ API proxy test failed: ${error.message}`, containerId, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        function checkConfiguration() {
+            const containerId = 'configResults';
+            
+            log('🔍 Checking API configuration...', containerId, 'info');
+            log(`📊 USE_LIVE_DATA: ${API_CONFIG.USE_LIVE_DATA}`, containerId, 'info');
+            log(`🔗 PROXY_BASE_URL: ${API_CONFIG.PROXY_BASE_URL}`, containerId, 'info');
+            log(`🔑 POLYGON_API_KEY: ${API_CONFIG.POLYGON_API_KEY ? 'Present' : 'Missing'}`, containerId, 'info');
+            
+            // Test if proxy URL is accessible
+            fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`)
+                .then(response => response.json())
+                .then(data => {
+                    log(`✅ Proxy accessibility: ${data.message}`, containerId, 'success');
+                })
+                .catch(error => {
+                    log(`❌ Proxy accessibility: ${error.message}`, containerId, 'error');
+                });
+        }
+
+        // Auto-run configuration check on load
+        window.onload = function() {
+            checkConfiguration();
+            log('🚀 Debug test page loaded', 'configResults', 'info');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Ticker Issue</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            background: #1a1a1a; 
+            color: #fff; 
+            padding: 20px; 
+        }
+        .stock { 
+            background: #333; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border-radius: 5px; 
+        }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .success { color: #4CAF50; }
+    </style>
+</head>
+<body>
+    <h1>🔬 Debug Ticker Symbol Issue</h1>
+    
+    <button onclick="testStockGeneration()" style="padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 5px;">
+        Generate Test Stocks
+    </button>
+    
+    <div id="results"></div>
+
+    <script>
+        // Replicate the stock config from main app
+        const stockConfig = {
+            sectors: {
+                'Technology': {
+                    count: 10,
+                    symbols: ['AAPL', 'MSFT', 'NVDA', 'AMD', 'GOOGL', 'META', 'TSLA', 'CRM', 'ORCL', 'VEEV', 'WDAY', 'ANSS', 'CDNS', 'SNPS', 'ADSK'],
+                    avgPrice: 150, priceRange: [5, 500], avgVolume: 25, volumeRange: [0.5, 200], peRange: [15, 80]
+                }
+            }
+        };
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function generateTicker(baseSymbol, id) {
+            console.log(`generateTicker called with baseSymbol: "${baseSymbol}", id: ${id}`);
+            
+            // For first 50 stocks, use exact symbols
+            if (id <= 50) {
+                console.log(`Returning exact symbol: "${baseSymbol}"`);
+                return baseSymbol;
+            }
+            
+            // For additional stocks, use simple variations
+            const variations = ['A', 'B', 'C', 'D', 'E'];
+            const variation = variations[id % variations.length];
+            
+            // Only add variation if really needed, prefer clean symbols
+            if (id <= 100) {
+                console.log(`Returning clean symbol: "${baseSymbol}"`);
+                return baseSymbol;
+            }
+            
+            const result = baseSymbol + variation;
+            console.log(`Returning varied symbol: "${result}"`);
+            return result;
+        }
+
+        function formatMarketCap(capB) {
+            if (capB >= 1000) return `${(capB/1000).toFixed(1)}T`;
+            if (capB >= 1) return `${capB.toFixed(0)}B`;
+            return `${(capB * 1000).toFixed(0)}M`;
+        }
+
+        function formatVolume(volumeM) {
+            if (volumeM >= 1000) return `${(volumeM/1000).toFixed(1)}B`;
+            return `${volumeM.toFixed(0)}M`;
+        }
+
+        function generateRealisticStock(sector, config, id) {
+            console.log(`\n=== Generating stock ${id} ===`);
+            
+            // Use real symbols when available, otherwise generate realistic ones
+            const baseSymbol = config.symbols[id % config.symbols.length];
+            console.log(`baseSymbol from config: "${baseSymbol}"`);
+            
+            const ticker = id <= config.symbols.length ? baseSymbol : generateTicker(baseSymbol, id);
+            console.log(`Final ticker: "${ticker}"`);
+            
+            // Generate realistic price based on sector averages
+            const price = Math.random() * 200 + 50; // Simple price generation
+            const change = (Math.random() - 0.5) * 20; // -10% to +10%
+            
+            // Generate volume with realistic distribution
+            const volumeM = Math.random() * 100 + 10;
+            const volume = formatVolume(volumeM);
+            
+            // Generate market cap based on price and realistic shares outstanding
+            const sharesOutstanding = Math.random() * 5000 + 100; // 100M to 5B shares
+            const marketCapB = (price * sharesOutstanding) / 1000;
+            const marketCap = formatMarketCap(marketCapB);
+            
+            const stock = {
+                ticker,
+                price: parseFloat(price.toFixed(2)),
+                change: parseFloat(change.toFixed(2)),
+                volume,
+                sector,
+                marketCap,
+                pe: Math.random() * 30 + 10
+            };
+            
+            console.log('Generated stock object:', stock);
+            return stock;
+        }
+
+        function testStockGeneration() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            
+            log('<h2>🔬 Testing Stock Generation</h2>');
+            
+            const config = stockConfig.sectors['Technology'];
+            
+            // Generate first 15 stocks to see the pattern
+            for (let i = 1; i <= 15; i++) {
+                const stock = generateRealisticStock('Technology', config, i);
+                
+                const tickerDisplay = stock.ticker;
+                const expectedSymbol = config.symbols[i % config.symbols.length];
+                
+                const isCorrect = tickerDisplay === expectedSymbol || (i > config.symbols.length);
+                const status = isCorrect ? 'success' : 'error';
+                
+                log(`<div class="stock ${status}">
+                    Stock ${i}: 
+                    Expected: "${expectedSymbol}" → 
+                    Generated: "${tickerDisplay}" 
+                    ${isCorrect ? '✅' : '❌'}
+                    <br>
+                    Full object: ${JSON.stringify(stock)}
+                </div>`);
+            }
+            
+            log('<h3>🔍 Symbol Array Check</h3>');
+            config.symbols.forEach((symbol, index) => {
+                log(`<div>Index ${index}: "${symbol}" (length: ${symbol.length})</div>`);
+            });
+        }
+
+        // Auto-run test on load
+        window.onload = function() {
+            log('🚀 Ticker Debug Tool Ready');
+        };
+    </script>
+</body>
+</html>

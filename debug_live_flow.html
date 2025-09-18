@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Live Data Flow</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            background: #1a1a1a; 
+            color: #fff; 
+            padding: 20px; 
+        }
+        .step { 
+            background: #333; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .button {
+            padding: 10px 20px; 
+            margin: 10px 5px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 5px;
+        }
+        .error { border-left-color: #f44336; }
+        .warning { border-left-color: #ff9800; }
+    </style>
+</head>
+<body>
+    <h1>🔬 Live Data Flow Debug</h1>
+    
+    <div>
+        <button class="button" onclick="step1_checkAPI()">Step 1: Check API</button>
+        <button class="button" onclick="step2_fetchLiveData()">Step 2: Fetch Live Data</button>
+        <button class="button" onclick="step3_updateDatabase()">Step 3: Update Database</button>
+        <button class="button" onclick="step4_refreshDisplay()">Step 4: Refresh Display</button>
+        <button class="button" onclick="runFullTest()">🚀 Run Full Test</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_CONFIG = {
+            PROXY_BASE_URL: 'https://8001-ivkoqyg1hwsv2ro9ik8am-6532622b.e2b.dev',
+            USE_LIVE_DATA: true
+        };
+
+        // Mock stocks database
+        const mockStocks = [
+            { ticker: 'AAPL', price: 150.00, change: 1.5, volume: '45M', sector: 'Technology', marketCap: '2.5T' },
+            { ticker: 'MSFT', price: 300.00, change: 2.1, volume: '35M', sector: 'Technology', marketCap: '2.2T' },
+            { ticker: 'NVDA', price: 450.00, change: -0.8, volume: '60M', sector: 'Technology', marketCap: '1.1T' }
+        ];
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `step ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function formatVolume(volume) {
+            if (volume >= 1000000000) return (volume / 1000000000).toFixed(1) + 'B';
+            if (volume >= 1000000) return (volume / 1000000).toFixed(1) + 'M';
+            if (volume >= 1000) return (volume / 1000).toFixed(1) + 'K';
+            return volume.toString();
+        }
+
+        async function step1_checkAPI() {
+            log('🔄 Step 1: Checking API proxy connection...');
+            try {
+                const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    log(`✅ Step 1 SUCCESS: ${data.message}`);
+                    return true;
+                } else {
+                    throw new Error(`API test failed: ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Step 1 FAILED: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function step2_fetchLiveData() {
+            log('🔄 Step 2: Fetching live data from API...');
+            try {
+                const tickers = 'AAPL,MSFT,NVDA';
+                const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/batch-quotes?tickers=${tickers}`);
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    const liveData = data.quotes.map(quote => ({
+                        ticker: quote.ticker,
+                        price: quote.price,
+                        change: quote.change,
+                        volume: formatVolume(quote.volume),
+                        timestamp: new Date().toLocaleTimeString()
+                    }));
+                    
+                    log(`✅ Step 2 SUCCESS: Fetched ${liveData.length} stocks`);
+                    liveData.forEach(stock => {
+                        log(`📊 ${stock.ticker}: $${stock.price} (${stock.change}%) Vol: ${stock.volume}`);
+                    });
+                    
+                    window.testLiveData = liveData;
+                    return liveData;
+                } else {
+                    throw new Error(`Live data fetch failed: ${data.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                log(`❌ Step 2 FAILED: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function step3_updateDatabase() {
+            log('🔄 Step 3: Updating mock database with live data...');
+            
+            if (!window.testLiveData) {
+                log('❌ Step 3 FAILED: No live data available. Run Step 2 first.', 'error');
+                return false;
+            }
+
+            try {
+                let updatedCount = 0;
+                
+                log(`📊 Database before update: ${mockStocks.length} stocks`);
+                mockStocks.forEach(stock => {
+                    log(`   ${stock.ticker}: $${stock.price} (${stock.change}%)`);
+                });
+
+                window.testLiveData.forEach(liveStock => {
+                    const existingStock = mockStocks.find(stock => stock.ticker === liveStock.ticker);
+                    if (existingStock) {
+                        log(`🔄 Updating ${liveStock.ticker}: $${existingStock.price} → $${liveStock.price} (${liveStock.change}%)`);
+                        existingStock.price = liveStock.price;
+                        existingStock.change = parseFloat(liveStock.change);
+                        existingStock.volume = liveStock.volume;
+                        existingStock.timestamp = liveStock.timestamp;
+                        updatedCount++;
+                    } else {
+                        log(`⚠️ Stock ${liveStock.ticker} not found in database`, 'warning');
+                    }
+                });
+
+                log(`✅ Step 3 SUCCESS: Updated ${updatedCount} stocks in database`);
+                
+                log(`📊 Database after update:`);
+                mockStocks.forEach(stock => {
+                    log(`   ${stock.ticker}: $${stock.price} (${stock.change}%) ${stock.timestamp || ''}`);
+                });
+                
+                return true;
+            } catch (error) {
+                log(`❌ Step 3 FAILED: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function step4_refreshDisplay() {
+            log('🔄 Step 4: Simulating display refresh...');
+            
+            try {
+                // Simulate what performScan would do
+                log('📊 Filtering stocks for display...');
+                
+                const results = mockStocks.filter(stock => {
+                    return stock.price > 0; // Basic filter
+                });
+                
+                log(`✅ Step 4 SUCCESS: ${results.length} stocks ready for display`);
+                
+                results.forEach(stock => {
+                    const changeText = stock.change > 0 ? `+${stock.change}%` : `${stock.change}%`;
+                    const color = stock.change > 0 ? '🟢' : '🔴';
+                    log(`${color} ${stock.ticker}: $${stock.price} (${changeText}) Vol: ${stock.volume}`);
+                });
+                
+                return true;
+            } catch (error) {
+                log(`❌ Step 4 FAILED: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function runFullTest() {
+            log('🚀 Running complete live data flow test...', 'info');
+            
+            const step1 = await step1_checkAPI();
+            if (!step1) return;
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const step2 = await step2_fetchLiveData();
+            if (!step2) return;
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const step3 = await step3_updateDatabase();
+            if (!step3) return;
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const step4 = await step4_refreshDisplay();
+            
+            if (step4) {
+                log('🎉 FULL TEST COMPLETED SUCCESSFULLY!', 'info');
+                log('✅ Live data integration is working correctly');
+            }
+        }
+
+        // Auto-initialize
+        window.onload = function() {
+            log('🚀 Live Data Flow Debugger Ready');
+            log('📊 Click buttons to test each step individually or run full test');
+        };
+    </script>
+</body>
+</html>

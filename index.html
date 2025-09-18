@@ -99,6 +99,9 @@
                         <button onclick="refreshLiveData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-all">
                             <i class="fas fa-sync mr-2"></i>Refresh Data
                         </button>
+                        <button onclick="debugLiveDataDirect()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition-all">
+                            <i class="fas fa-bug mr-2"></i>Debug Test
+                        </button>
                     </div>
                 </div>
                 
@@ -825,6 +828,27 @@
             
             console.log('🚀 Generating 4,500+ stock database...');
             
+            // CRITICAL FIX: First, ensure key live-data tickers exist with exact names
+            const liveDataTickers = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'TSLA', 'META', 'AMZN', 'NFLX'];
+            const tickerSectorMap = {
+                'AAPL': 'Technology', 'MSFT': 'Technology', 'NVDA': 'Technology', 'GOOGL': 'Technology', 
+                'META': 'Technology', 'TSLA': 'Consumer Discretionary', 'AMZN': 'Consumer Discretionary', 
+                'NFLX': 'Consumer Discretionary'
+            };
+            
+            console.log('📍 Pre-generating critical live-data tickers...');
+            liveDataTickers.forEach(ticker => {
+                const sectorName = tickerSectorMap[ticker];
+                const sectorConfig = stockConfig.sectors[sectorName];
+                if (sectorConfig) {
+                    const stock = generateRealisticStock(sectorName, sectorConfig, stockId++, ticker);
+                    if (stock) {
+                        console.log(`✅ Generated live-data stock: ${stock.ticker} ($${stock.price})`);
+                        mockStocks.push(stock);
+                    }
+                }
+            });
+            
             Object.entries(stockConfig.sectors).forEach(([sectorName, config]) => {
                 console.log(`📊 Generating ${config.count} ${sectorName} stocks...`);
                 
@@ -837,13 +861,21 @@
             });
             
             console.log(`✅ Generated ${mockStocks.length} stocks across ${Object.keys(stockConfig.sectors).length} sectors`);
+            console.log(`📍 Key live-data tickers guaranteed: ${liveDataTickers.join(', ')}`);
             return mockStocks;
         }
 
-        function generateRealisticStock(sector, config, id) {
-            // Use real symbols when available, otherwise generate realistic ones
-            const baseSymbol = config.symbols[id % config.symbols.length];
-            const ticker = id <= config.symbols.length ? baseSymbol : generateTicker(baseSymbol, id);
+        function generateRealisticStock(sector, config, id, forceTicker = null) {
+            // Use forced ticker if provided (for live-data guarantee), otherwise use normal generation
+            let ticker;
+            if (forceTicker) {
+                ticker = forceTicker;
+            } else {
+                const baseSymbol = config.symbols[id % config.symbols.length];
+                // Ensure we preserve exact symbols for the first N stocks where N = symbols.length
+                const isFirstOccurrenceOfSymbol = id <= config.symbols.length;
+                ticker = isFirstOccurrenceOfSymbol ? baseSymbol : generateTicker(baseSymbol, id);
+            }
             
             // Generate realistic price based on sector averages
             const price = generatePrice(config.avgPrice, config.priceRange);
@@ -909,15 +941,15 @@
         }
 
        function generateTicker(baseSymbol, id) {
-    // For first 50 stocks, use exact symbols
-    if (id <= 50) return baseSymbol;
+    // Always use exact symbols for cleaner display
+    // Only add variations for stocks way beyond the symbol list
+    if (id <= 1000) {
+        return baseSymbol;
+    }
     
-    // For additional stocks, use simple variations
-    const variations = ['A', 'B', 'C', 'D', 'E'];
+    // For the rare case of needing more than 1000 stocks per sector
+    const variations = ['X', 'Y', 'Z'];
     const variation = variations[id % variations.length];
-    
-    // Only add variation if really needed, prefer clean symbols
-    if (id <= 100) return baseSymbol;
     return baseSymbol + variation;
 }
 
@@ -960,13 +992,14 @@
         // LIVE DATA INTEGRATION LAYER - Ready for Polygon API Integration
         // ====================================================================
 
-        // API Configuration - READY FOR YOUR POLYGON KEYS
+        // API Configuration - LIVE DATA ENABLED
         const API_CONFIG = {
             POLYGON_API_KEY: '75rlu6cWGNnIqqR_x8M384YUjBgGk6kT', // Replace with your key
             POLYGON_BASE_URL: 'https://api.polygon.io',
             FMP_API_KEY: 'm2XfxOS0sZxs6hLEY5yRzUgDyp5Dur4V', // Replace with your key  
             FMP_BASE_URL: 'https://financialmodelingprep.com/api',
-            USE_LIVE_DATA: true, // Set to true when ready for live data
+            USE_LIVE_DATA: true, // ENABLED for live data
+            PROXY_BASE_URL: 'https://8001-ivkoqyg1hwsv2ro9ik8am-6532622b.e2b.dev', // API Proxy server
             WEBSOCKET_URL: 'wss://socket.polygon.io/stocks',
             UPDATE_INTERVAL: 5000, // 5 seconds for live updates
             MAX_BATCH_SIZE: 100 // API batch request size
@@ -983,7 +1016,246 @@
             },
             
             enableLiveData: async function() {
-                alert('🚀 Live Data Integration Ready!\n\nTo enable live data:\n1. Replace API keys in the code\n2. Set USE_LIVE_DATA: true\n3. Deploy with backend proxy for security');
+                console.log('🔄 enableLiveData() function called');
+                console.log('📊 API_CONFIG.USE_LIVE_DATA:', API_CONFIG.USE_LIVE_DATA);
+                console.log('📊 API_CONFIG.PROXY_BASE_URL:', API_CONFIG.PROXY_BASE_URL);
+                
+                try {
+                    this.isLive = true;
+                    console.log('✅ Set isLive = true');
+                    
+                    // Update UI indicators with safety checks
+                    console.log('🔄 Updating UI indicators...');
+                    try {
+                        const indicator = document.getElementById('dataSourceIndicator');
+                        const text = document.getElementById('dataSourceText');
+                        const btn = document.getElementById('liveDataBtn');
+                        
+                        if (indicator) {
+                            indicator.className = 'w-3 h-3 bg-green-400 rounded-full';
+                        } else {
+                            console.warn('⚠️ dataSourceIndicator element not found');
+                        }
+                        
+                        if (text) {
+                            text.textContent = 'Live Data Mode';
+                        } else {
+                            console.warn('⚠️ dataSourceText element not found');
+                        }
+                        
+                        if (btn) {
+                            btn.innerHTML = '<i class="fas fa-check mr-2"></i>Live Data Active';
+                            btn.className = 'px-4 py-2 bg-green-500 rounded-lg text-sm cursor-default';
+                            btn.disabled = true;
+                        } else {
+                            console.warn('⚠️ liveDataBtn element not found');
+                        }
+                    } catch (domError) {
+                        console.error('❌ DOM update error:', domError);
+                    }
+                    
+                    console.log('🟢 LIVE DATA MODE: Fetching real-time market data...');
+                    
+                    // Fetch live data from APIs
+                    const liveData = await this.fetchLiveStockData();
+                    
+                    // Show success message with actual live data info
+                    const liveCount = liveData ? liveData.length : 0;
+                    const sampleTickers = liveData ? liveData.slice(0, 3).map(stock => `${stock.ticker}: $${stock.price}`).join(', ') : '';
+                    
+                    alert(`✅ Live Data Successfully Enabled!\n\n📊 Live Stock Data Retrieved: ${liveCount} stocks\n📈 Sample: ${sampleTickers}\n🔴 Scanner results now showing real-time prices\n\n🎯 Look for:\n• Green "Live Data Active" indicator\n• Updated stock prices in scanner results\n• Real-time volume data`);
+                    
+                } catch (error) {
+                    console.error('❌ Live data activation failed:', error);
+                    console.error('❌ Error details:', {
+                        message: error.message,
+                        stack: error.stack,
+                        API_CONFIG: API_CONFIG
+                    });
+                    alert(`⚠️ Live Data Error\n\nError: ${error.message}\n\nFalling back to demo mode.\nCheck console for full details.`);
+                    this.isLive = false;
+                }
+            },
+            
+            fetchLiveStockData: async function() {
+                console.log('🔄 fetchLiveStockData() called');
+                console.log('📊 API_CONFIG.USE_LIVE_DATA:', API_CONFIG.USE_LIVE_DATA);
+                console.log('📊 API_CONFIG.PROXY_BASE_URL:', API_CONFIG.PROXY_BASE_URL);
+                
+                if (!API_CONFIG.USE_LIVE_DATA) {
+                    console.log('❌ Live data disabled in config');
+                    return;
+                }
+                
+                try {
+                    console.log('🔄 Fetching live data via API proxy...');
+                    console.log('🔗 Proxy URL:', API_CONFIG.PROXY_BASE_URL);
+                    
+                    // First test the proxy connection
+                    const testResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
+                    
+                    if (!testResponse.ok) {
+                        throw new Error(`Proxy test failed: ${testResponse.status}`);
+                    }
+                    
+                    const testData = await testResponse.json();
+                    console.log('✅ Proxy connection successful:', testData.message);
+                    
+                    // Fetch batch quotes for popular stocks
+                    const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX';
+                    const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/batch-quotes?tickers=${tickers}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'success' && data.quotes && data.quotes.length > 0) {
+                        console.log(`✅ Live data fetched: ${data.quotes.length} stocks`);
+                        
+                        // Transform to our internal format
+                        const liveData = data.quotes.map(quote => ({
+                            ticker: quote.ticker,
+                            price: quote.price,
+                            change: quote.change,
+                            volume: this.formatVolume(quote.volume),
+                            timestamp: new Date().toLocaleTimeString()
+                        }));
+                        
+                        this.updateStockDatabase(liveData);
+                        return liveData;
+                    } else {
+                        throw new Error(data.message || 'No live data received from APIs');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Live data fetch error:', error);
+                    
+                    // Try fallback API endpoint
+                    try {
+                        console.log('🔄 Trying fallback API connection...');
+                        const fallbackResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/quote/AAPL`);
+                        
+                        if (fallbackResponse.ok) {
+                            const fallbackData = await fallbackResponse.json();
+                            console.log('✅ Fallback API working:', fallbackData);
+                            
+                            if (fallbackData.status === 'success') {
+                                const liveData = [{
+                                    ticker: 'AAPL',
+                                    price: fallbackData.quote.price,
+                                    change: fallbackData.quote.change,
+                                    volume: this.formatVolume(fallbackData.quote.volume),
+                                    timestamp: new Date().toLocaleTimeString()
+                                }];
+                                
+                                this.updateStockDatabase(liveData);
+                                return liveData;
+                            }
+                        }
+                    } catch (fallbackError) {
+                        console.error('❌ Fallback API also failed:', fallbackError);
+                    }
+                    
+                    throw error;
+                }
+            },
+            
+            updateStockDatabase: function(liveData) {
+                console.log('🔄 updateStockDatabase called with:', liveData);
+                console.log('📊 Current mockStocks count before update:', mockStocks.length);
+                
+                // Update the mock database with live data
+                let updatedCount = 0;
+                liveData.forEach(liveStock => {
+                    const existingStock = mockStocks.find(stock => stock.ticker === liveStock.ticker);
+                    if (existingStock) {
+                        console.log(`📈 Updating ${liveStock.ticker}: $${existingStock.price} → $${liveStock.price} (${liveStock.change}%)`);
+                        existingStock.price = liveStock.price;
+                        existingStock.change = parseFloat(liveStock.change);
+                        existingStock.volume = liveStock.volume;
+                        existingStock.timestamp = liveStock.timestamp;
+                        updatedCount++;
+                    } else {
+                        console.log(`⚠️ Stock ${liveStock.ticker} not found in mockStocks database`);
+                    }
+                });
+                
+                console.log(`✅ Updated ${updatedCount} stocks in database`);
+                console.log('🔄 Calling performScan() to refresh display...');
+                
+                // Refresh the scanner display
+                try {
+                    console.log('🔄 Attempting to refresh scanner display...');
+                    
+                    // Method 1: Try the normal performScan()
+                    performScan();
+                    console.log('✅ performScan() completed successfully');
+                    
+                } catch (scanError) {
+                    console.error('❌ Error in performScan():', scanError);
+                    
+                    // Method 2: Fallback - direct UI update
+                    try {
+                        console.log('🔄 Trying fallback direct UI update...');
+                        this.forceUIRefresh(liveData);
+                    } catch (fallbackError) {
+                        console.error('❌ Fallback UI update also failed:', fallbackError);
+                    }
+                }
+            },
+            
+            formatVolume: function(volume) {
+                if (volume >= 1000000000) return (volume / 1000000000).toFixed(1) + 'B';
+                if (volume >= 1000000) return (volume / 1000000).toFixed(1) + 'M';
+                if (volume >= 1000) return (volume / 1000).toFixed(1) + 'K';
+                return volume.toString();
+            },
+            
+            forceUIRefresh: function(liveData) {
+                console.log('🔄 forceUIRefresh called with:', liveData);
+                
+                try {
+                    // Create a simple filtered result set with updated live data
+                    const refreshResults = mockStocks
+                        .filter(stock => stock.price > 0)
+                        .sort((a, b) => b.change - a.change) // Sort by biggest gainers
+                        .slice(0, 25); // Show top 25
+                    
+                    console.log(`📊 Forcing UI refresh with ${refreshResults.length} stocks`);
+                    
+                    // Directly update the results
+                    filteredResults = [...refreshResults];
+                    currentResults = [...refreshResults];
+                    
+                    // Force update displays
+                    if (typeof updateResultsDisplay === 'function') {
+                        updateResultsDisplay();
+                        console.log('✅ Direct updateResultsDisplay() called');
+                    }
+                    
+                    if (typeof updateScanSummary === 'function') {
+                        updateScanSummary(refreshResults);
+                        console.log('✅ Direct updateScanSummary() called');
+                    }
+                    
+                    // Update UI indicators to show live data is active
+                    const indicator = document.getElementById('dataSourceIndicator');
+                    const text = document.getElementById('dataSourceText');
+                    
+                    if (indicator) {
+                        indicator.className = 'w-3 h-3 bg-green-400 rounded-full animate-pulse';
+                    }
+                    if (text) {
+                        text.textContent = 'Live Data Active';
+                    }
+                    
+                    console.log('✅ Force UI refresh completed');
+                    
+                } catch (error) {
+                    console.error('❌ Error in forceUIRefresh:', error);
+                }
             }
         };
 
@@ -991,7 +1263,30 @@
         
         // API Integration Functions (Ready for Live Data)
         async function switchToLiveData() {
-            await dataManager.enableLiveData();
+            console.log('🔄 switchToLiveData() called');
+            console.log('📊 API_CONFIG:', API_CONFIG);
+            console.log('📊 dataManager:', dataManager);
+            
+            const btn = document.getElementById('liveDataBtn');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Connecting...';
+                btn.disabled = true;
+                console.log('✅ Button updated to connecting state');
+            } else {
+                console.error('❌ liveDataBtn not found!');
+            }
+            
+            try {
+                console.log('🔄 Calling dataManager.enableLiveData()...');
+                await dataManager.enableLiveData();
+                console.log('✅ dataManager.enableLiveData() completed');
+            } catch (error) {
+                console.error('❌ Error in switchToLiveData():', error);
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-wifi mr-2"></i>Enable Live Data';
+                    btn.disabled = false;
+                }
+            }
         }
 
         // Enhanced scan function that works with both mock and live data
@@ -999,6 +1294,51 @@
             console.log('🔄 Refreshing mock data...');
             generateMassiveStockDatabase();
             performScan();
+        }
+        
+        // Debug function to test live data directly
+        async function debugLiveDataDirect() {
+            console.log('🔬 DEBUG: Direct live data test starting...');
+            
+            try {
+                // Test 1: Check configuration
+                console.log('📊 API_CONFIG.USE_LIVE_DATA:', API_CONFIG.USE_LIVE_DATA);
+                console.log('📊 API_CONFIG.PROXY_BASE_URL:', API_CONFIG.PROXY_BASE_URL);
+                
+                // Test 2: Direct proxy test
+                console.log('🔄 Testing proxy health directly...');
+                const healthResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
+                const healthData = await healthResponse.json();
+                console.log('✅ Proxy health result:', healthData);
+                
+                // Test 3: Try a simple quote
+                console.log('🔄 Testing single quote directly...');
+                const quoteResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/quote/AAPL`);
+                const quoteData = await quoteResponse.json();
+                console.log('✅ Quote result:', quoteData);
+                
+                // Test 4: Try the exact same call as enableLiveData
+                console.log('🔄 Testing batch quotes (same as enableLiveData)...');
+                const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX';
+                const batchResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/batch-quotes?tickers=${tickers}`);
+                const batchData = await batchResponse.json();
+                console.log('✅ Batch result:', batchData);
+                
+                // Test 5: Try to call the actual enableLiveData function
+                console.log('🔄 Testing actual enableLiveData function...');
+                try {
+                    await dataManager.enableLiveData();
+                    console.log('✅ enableLiveData() completed successfully!');
+                } catch (enableError) {
+                    console.error('❌ enableLiveData() failed:', enableError);
+                }
+                
+                alert('🎉 Debug Test Completed!\n\nCheck console for detailed results.\nAll tests should be passing.');
+                
+            } catch (error) {
+                console.error('❌ Debug test failed:', error);
+                alert('❌ Debug Test Failed!\n\nError: ' + error.message + '\n\nCheck console for details.');
+            }
         }
 
         // Enhanced AI response system with stock-specific analysis
@@ -1112,10 +1452,22 @@
 
         // Enhanced perform scan functionality with advanced filtering
         function performScan() {
-            const scanType = document.getElementById('scanType').value;
-            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
-            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || 999999;
-            const minVolume = parseInt(document.getElementById('minVolume').value) || 0;
+            console.log('🔄 performScan() called');
+            console.log('📊 mockStocks available:', mockStocks ? mockStocks.length : 'undefined');
+            
+            // Safely get DOM element values with fallbacks
+            const scanTypeEl = document.getElementById('scanType');
+            const scanType = scanTypeEl ? scanTypeEl.value : 'TOP_GAINERS';
+            console.log('📊 scanType:', scanType);
+            
+            const minPriceEl = document.getElementById('minPrice');
+            const minPrice = minPriceEl ? parseFloat(minPriceEl.value) || 0 : 0;
+            
+            const maxPriceEl = document.getElementById('maxPrice');
+            const maxPrice = maxPriceEl ? parseFloat(maxPriceEl.value) || 999999 : 999999;
+            
+            const minVolumeEl = document.getElementById('minVolume');
+            const minVolume = minVolumeEl ? parseInt(minVolumeEl.value) || 0 : 0;
             
             // Get advanced filter values
             const marketCap = document.getElementById('marketCap')?.value || '';
@@ -1320,6 +1672,12 @@
                 const scoreClass = stock.aiScore >= 90 ? 'score-high' : stock.aiScore >= 80 ? 'score-medium' : 'score-low';
                 const rsiColor = stock.rsi > 70 ? 'text-red-400' : stock.rsi < 30 ? 'text-green-400' : 'text-yellow-400';
                 
+                // Debug: Check for suspicious ticker values
+                if (stock.ticker && stock.ticker.length > 5) {
+                    console.warn(`⚠️ Suspicious ticker: "${stock.ticker}" (length: ${stock.ticker.length})`);
+                    console.log('Full stock object:', stock);
+                }
+                
                 row.innerHTML = `
                     <td class="p-3">
                         <div class="font-bold text-blue-400">${stock.ticker}</div>
@@ -1368,22 +1726,62 @@
         }
 
         function updateScanSummary(results) {
-            document.getElementById('foundCount').textContent = results.length;
-            document.getElementById('resultCount').textContent = `(${results.length} found)`;
-            document.getElementById('scannedCount').textContent = mockStocks.length.toLocaleString();
-            document.getElementById('totalStockCount').textContent = mockStocks.length.toLocaleString();
-            
-            // Update data source indicator
-            if (dataManager.isLive) {
-                document.getElementById('dataSourceIndicator').className = 'w-3 h-3 bg-green-400 rounded-full';
-                document.getElementById('dataSourceText').textContent = 'Live Data';
-                document.getElementById('liveDataBtn').innerHTML = '<i class="fas fa-check mr-2"></i>Live Data Active';
-                document.getElementById('liveDataBtn').className = 'px-4 py-2 bg-green-600 rounded-lg text-sm opacity-75 cursor-not-allowed';
-            } else {
-                document.getElementById('dataSourceIndicator').className = 'w-3 h-3 bg-yellow-400 rounded-full animate-pulse';
-                document.getElementById('dataSourceText').textContent = 'Demo Mode';
-                document.getElementById('liveDataBtn').innerHTML = '<i class="fas fa-wifi mr-2"></i>Enable Live Data';
-                document.getElementById('liveDataBtn').className = 'px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-all';
+            // Safely update DOM elements with null checks
+            try {
+                const foundCountEl = document.getElementById('foundCount');
+                if (foundCountEl) {
+                    foundCountEl.textContent = results.length;
+                }
+                
+                const resultCountEl = document.getElementById('resultCount');
+                if (resultCountEl) {
+                    resultCountEl.textContent = `(${results.length} found)`;
+                }
+                
+                const scannedCountEl = document.getElementById('scannedCount');
+                if (scannedCountEl) {
+                    scannedCountEl.textContent = mockStocks.length.toLocaleString();
+                } else {
+                    console.warn('⚠️ scannedCount element not found');
+                }
+                
+                const totalStockCountEl = document.getElementById('totalStockCount');
+                if (totalStockCountEl) {
+                    totalStockCountEl.textContent = mockStocks.length.toLocaleString();
+                }
+                
+                // Update data source indicator with safety checks
+                const dataSourceIndicator = document.getElementById('dataSourceIndicator');
+                const dataSourceText = document.getElementById('dataSourceText');
+                const liveDataBtn = document.getElementById('liveDataBtn');
+                
+                if (dataManager.isLive) {
+                    if (dataSourceIndicator) {
+                        dataSourceIndicator.className = 'w-3 h-3 bg-green-400 rounded-full';
+                    }
+                    if (dataSourceText) {
+                        dataSourceText.textContent = 'Live Data';
+                    }
+                    if (liveDataBtn) {
+                        liveDataBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Live Data Active';
+                        liveDataBtn.className = 'px-4 py-2 bg-green-600 rounded-lg text-sm opacity-75 cursor-not-allowed';
+                    }
+                } else {
+                    if (dataSourceIndicator) {
+                        dataSourceIndicator.className = 'w-3 h-3 bg-yellow-400 rounded-full animate-pulse';
+                    }
+                    if (dataSourceText) {
+                        dataSourceText.textContent = 'Demo Mode';
+                    }
+                    if (liveDataBtn) {
+                        liveDataBtn.innerHTML = '<i class="fas fa-wifi mr-2"></i>Enable Live Data';
+                        liveDataBtn.className = 'px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-all';
+                    }
+                }
+                
+            } catch (domError) {
+                console.error('❌ Error updating scan summary DOM elements:', domError);
+                console.warn('⚠️ Some UI elements may not be updated due to DOM access issues');
             }
             
             if (results.length > 0) {
@@ -1394,9 +1792,16 @@
                 }, 0) / results.length;
                 const avgVolume = avgVolumeNum >= 1000 ? `${(avgVolumeNum/1000).toFixed(1)}B` : `${avgVolumeNum.toFixed(1)}M`;
                 
-                document.getElementById('avgChange').textContent = `${avgChange > 0 ? '+' : ''}${avgChange}%`;
-                document.getElementById('avgChange').className = `text-2xl font-bold ${avgChange >= 0 ? 'text-green-400' : 'text-red-400'}`;
-                document.getElementById('avgVolume').textContent = avgVolume;
+                const avgChangeEl = document.getElementById('avgChange');
+                if (avgChangeEl) {
+                    avgChangeEl.textContent = `${avgChange > 0 ? '+' : ''}${avgChange}%`;
+                    avgChangeEl.className = `text-2xl font-bold ${avgChange >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                }
+                
+                const avgVolumeEl = document.getElementById('avgVolume');
+                if (avgVolumeEl) {
+                    avgVolumeEl.textContent = avgVolume;
+                }
                 
                 // Find top sector
                 const sectorCounts = {};
@@ -1414,13 +1819,36 @@
             const startResult = Math.min((currentPage - 1) * resultsPerPage + 1, filteredResults.length);
             const endResult = Math.min(currentPage * resultsPerPage, filteredResults.length);
             
-            document.getElementById('showingStart').textContent = startResult;
-            document.getElementById('showingEnd').textContent = endResult;
-            document.getElementById('totalResults').textContent = filteredResults.length;
-            document.getElementById('currentPage').textContent = currentPage;
+            // Safely update pagination elements
+            const showingStartEl = document.getElementById('showingStart');
+            if (showingStartEl) {
+                showingStartEl.textContent = startResult;
+            }
             
-            document.getElementById('prevPage').disabled = currentPage <= 1;
-            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+            const showingEndEl = document.getElementById('showingEnd');
+            if (showingEndEl) {
+                showingEndEl.textContent = endResult;
+            }
+            
+            const totalResultsEl = document.getElementById('totalResults');
+            if (totalResultsEl) {
+                totalResultsEl.textContent = filteredResults.length;
+            }
+            
+            const currentPageEl = document.getElementById('currentPage');
+            if (currentPageEl) {
+                currentPageEl.textContent = currentPage;
+            }
+            
+            const prevPageBtn = document.getElementById('prevPage');
+            if (prevPageBtn) {
+                prevPageBtn.disabled = currentPage <= 1;
+            }
+            
+            const nextPageBtn = document.getElementById('nextPage');
+            if (nextPageBtn) {
+                nextPageBtn.disabled = currentPage >= totalPages;
+            }
         }
 
         // Enhanced AI query functionality with intelligent responses

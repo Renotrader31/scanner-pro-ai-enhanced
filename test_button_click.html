@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Live Data Button</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            background: #1a1a1a; 
+            color: #fff; 
+            padding: 20px; 
+        }
+        .button {
+            padding: 10px 20px; 
+            margin: 10px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 5px;
+        }
+        .result {
+            background: #333; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Live Data Button Test</h1>
+    
+    <button class="button" onclick="testLiveDataFunctionality()">
+        🔴 Test Live Data Activation
+    </button>
+    
+    <div id="testResults" class="result">
+        Ready to test...
+    </div>
+
+    <script>
+        // Replicate the exact API configuration from main app
+        const API_CONFIG = {
+            POLYGON_API_KEY: '75rlu6cWGNnIqqR_x8M384YUjBgGk6kT',
+            POLYGON_BASE_URL: 'https://api.polygon.io',
+            FMP_API_KEY: 'm2XfxOS0sZxs6hLEY5yRzUgDyp5Dur4V',
+            FMP_BASE_URL: 'https://financialmodelingprep.com/api',
+            USE_LIVE_DATA: true,
+            PROXY_BASE_URL: 'https://8001-ivkoqyg1hwsv2ro9ik8am-6532622b.e2b.dev',
+            WEBSOCKET_URL: 'wss://socket.polygon.io/stocks',
+            UPDATE_INTERVAL: 5000,
+            MAX_BATCH_SIZE: 100
+        };
+
+        // Mock mockStocks array
+        const mockStocks = [
+            { ticker: 'AAPL', price: 150, change: 2.5, volume: '50M', sector: 'Technology' },
+            { ticker: 'MSFT', price: 300, change: 1.8, volume: '40M', sector: 'Technology' }
+        ];
+
+        // Replicate the exact dataManager from main app
+        const dataManager = {
+            isLive: false,
+            websocket: null,
+            
+            initialize: function() {
+                console.log('🟡 DEMO MODE: Using comprehensive mock database...');
+                console.log(`📊 Mock database loaded: ${mockStocks.length} stocks`);
+            },
+            
+            enableLiveData: async function() {
+                console.log('🔄 enableLiveData() function called');
+                console.log('📊 API_CONFIG.USE_LIVE_DATA:', API_CONFIG.USE_LIVE_DATA);
+                console.log('📊 API_CONFIG.PROXY_BASE_URL:', API_CONFIG.PROXY_BASE_URL);
+                
+                try {
+                    this.isLive = true;
+                    console.log('✅ Set isLive = true');
+                    
+                    console.log('🟢 LIVE DATA MODE: Fetching real-time market data...');
+                    
+                    // Fetch live data from APIs
+                    await this.fetchLiveStockData();
+                    
+                    return '✅ Live Data Enabled Successfully!';
+                    
+                } catch (error) {
+                    console.error('❌ Live data activation failed:', error);
+                    console.error('❌ Error details:', {
+                        message: error.message,
+                        stack: error.stack,
+                        API_CONFIG: API_CONFIG
+                    });
+                    this.isLive = false;
+                    throw error;
+                }
+            },
+            
+            fetchLiveStockData: async function() {
+                console.log('🔄 fetchLiveStockData() called');
+                console.log('📊 API_CONFIG.USE_LIVE_DATA:', API_CONFIG.USE_LIVE_DATA);
+                console.log('📊 API_CONFIG.PROXY_BASE_URL:', API_CONFIG.PROXY_BASE_URL);
+                
+                if (!API_CONFIG.USE_LIVE_DATA) {
+                    console.log('❌ Live data disabled in config');
+                    return;
+                }
+                
+                try {
+                    console.log('🔄 Fetching live data via API proxy...');
+                    console.log('🔗 Proxy URL:', API_CONFIG.PROXY_BASE_URL);
+                    
+                    // First test the proxy connection
+                    const testResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
+                    
+                    if (!testResponse.ok) {
+                        throw new Error(`Proxy test failed: ${testResponse.status}`);
+                    }
+                    
+                    const testData = await testResponse.json();
+                    console.log('✅ Proxy connection successful:', testData.message);
+                    
+                    // Fetch batch quotes for popular stocks
+                    const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX';
+                    const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/batch-quotes?tickers=${tickers}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'success' && data.quotes && data.quotes.length > 0) {
+                        console.log(`✅ Live data fetched: ${data.quotes.length} stocks`);
+                        
+                        // Transform to our internal format
+                        const liveData = data.quotes.map(quote => ({
+                            ticker: quote.ticker,
+                            price: quote.price,
+                            change: quote.change,
+                            volume: this.formatVolume(quote.volume),
+                            timestamp: new Date().toLocaleTimeString()
+                        }));
+                        
+                        console.log('✅ Live data processed:', liveData);
+                        return liveData;
+                    } else {
+                        throw new Error(data.message || 'No live data received from APIs');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Live data fetch error:', error);
+                    throw error;
+                }
+            },
+            
+            formatVolume: function(volume) {
+                if (volume >= 1000000000) return (volume / 1000000000).toFixed(1) + 'B';
+                if (volume >= 1000000) return (volume / 1000000).toFixed(1) + 'M';
+                if (volume >= 1000) return (volume / 1000).toFixed(1) + 'K';
+                return volume.toString();
+            }
+        };
+
+        async function testLiveDataFunctionality() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div style="color: #2196F3;">🔄 Testing live data functionality...</div>';
+            
+            try {
+                console.log('🧪 Starting live data test...');
+                
+                const result = await dataManager.enableLiveData();
+                
+                resultsDiv.innerHTML = `
+                    <div style="color: #4CAF50;">✅ SUCCESS!</div>
+                    <div>${result}</div>
+                    <div style="margin-top: 10px; color: #ccc;">Check console for detailed logs.</div>
+                `;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div style="color: #f44336;">❌ FAILED</div>
+                    <div>Error: ${error.message}</div>
+                    <div style="margin-top: 10px; color: #ccc;">Check console for detailed error logs.</div>
+                `;
+                console.error('Test failed:', error);
+            }
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            dataManager.initialize();
+        };
+    </script>
+</body>
+</html>

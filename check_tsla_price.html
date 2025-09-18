@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSLA Price Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold text-green-400 mb-6">🔍 TSLA Price Debug Tool</h1>
+        
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-blue-400 mb-4">Real-time TSLA Price Check</h2>
+            
+            <div class="space-y-4">
+                <button onclick="checkLivePrice()" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold">
+                    🚀 Get Live TSLA Price from API
+                </button>
+                
+                <button onclick="checkScannerPrice()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-bold">
+                    📊 Check TSLA Price in Main Scanner
+                </button>
+                
+                <button onclick="comparePrices()" class="w-full bg-red-600 hover:bg-red-700 py-3 rounded-lg font-bold">
+                    ⚖️ Compare Live vs Scanner Prices
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-bold text-yellow-400 mb-4">📈 Price Data</h2>
+            <div id="priceData" class="space-y-3">
+                <div class="text-gray-400">Click a button above to check prices...</div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 rounded-lg p-6 mt-6">
+            <h2 class="text-xl font-bold text-purple-400 mb-4">🔬 Diagnostic Info</h2>
+            <div id="diagnostics" class="font-mono text-sm bg-gray-900 p-4 rounded-lg">
+                <div class="text-gray-400">Diagnostics will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_CONFIG = {
+            PROXY_BASE_URL: 'http://localhost:8001'
+        };
+
+        let priceData = document.getElementById('priceData');
+        let diagnostics = document.getElementById('diagnostics');
+        let livePrice = null;
+        let scannerPrice = null;
+
+        function updatePriceDisplay() {
+            priceData.innerHTML = '';
+            
+            if (livePrice) {
+                priceData.innerHTML += `
+                    <div class="bg-green-900 p-3 rounded-lg">
+                        <div class="font-bold text-green-400">🌐 Live API Price</div>
+                        <div class="text-2xl font-bold text-white">$${livePrice.price}</div>
+                        <div class="text-sm text-gray-300">Change: ${livePrice.change > 0 ? '+' : ''}${livePrice.change}%</div>
+                        <div class="text-xs text-gray-400">Volume: ${livePrice.volume}</div>
+                    </div>
+                `;
+            }
+            
+            if (scannerPrice) {
+                priceData.innerHTML += `
+                    <div class="bg-blue-900 p-3 rounded-lg">
+                        <div class="font-bold text-blue-400">📊 Scanner Database Price</div>
+                        <div class="text-2xl font-bold text-white">$${scannerPrice.price}</div>
+                        <div class="text-sm text-gray-300">Change: ${scannerPrice.change > 0 ? '+' : ''}${scannerPrice.change}%</div>
+                        <div class="text-xs text-gray-400">Volume: ${scannerPrice.volume}</div>
+                    </div>
+                `;
+            }
+            
+            if (livePrice && scannerPrice) {
+                const priceDiff = Math.abs(livePrice.price - scannerPrice.price);
+                const isMatch = priceDiff < 0.01;
+                
+                priceData.innerHTML += `
+                    <div class="bg-${isMatch ? 'green' : 'red'}-900 p-3 rounded-lg">
+                        <div class="font-bold text-${isMatch ? 'green' : 'red'}-400">
+                            ${isMatch ? '✅ Prices Match!' : '❌ Price Mismatch!'}
+                        </div>
+                        <div class="text-sm text-white">
+                            Difference: $${priceDiff.toFixed(2)}
+                        </div>
+                        ${!isMatch ? '<div class="text-xs text-red-300 mt-1">🚨 This is the issue! Scanner not showing live data.</div>' : ''}
+                    </div>
+                `;
+            }
+        }
+
+        function addDiagnostic(message, color = 'white') {
+            const timestamp = new Date().toLocaleTimeString();
+            const existingContent = diagnostics.innerHTML;
+            if (existingContent.includes('Diagnostics will appear here')) {
+                diagnostics.innerHTML = '';
+            }
+            diagnostics.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+        }
+
+        async function checkLivePrice() {
+            addDiagnostic('🔄 Fetching live TSLA price from API...', 'cyan');
+            
+            try {
+                const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/quote/TSLA`);
+                const data = await response.json();
+                
+                if (data.ticker && data.price) {
+                    livePrice = data;
+                    addDiagnostic(`✅ Live price fetched: $${data.price}`, 'green');
+                    updatePriceDisplay();
+                } else {
+                    addDiagnostic('❌ Invalid live price data received', 'red');
+                    addDiagnostic(`Raw data: ${JSON.stringify(data)}`, 'gray');
+                }
+                
+            } catch (error) {
+                addDiagnostic(`❌ Error fetching live price: ${error.message}`, 'red');
+            }
+        }
+
+        async function checkScannerPrice() {
+            addDiagnostic('🔄 Checking TSLA price in main scanner...', 'cyan');
+            
+            try {
+                // Try to access the main scanner window/frame
+                if (window.opener && window.opener.mockStocks) {
+                    const mockStocks = window.opener.mockStocks;
+                    const tslaStock = mockStocks.find(stock => stock.ticker === 'TSLA');
+                    
+                    if (tslaStock) {
+                        scannerPrice = tslaStock;
+                        addDiagnostic(`✅ Scanner price found: $${tslaStock.price}`, 'green');
+                        updatePriceDisplay();
+                    } else {
+                        addDiagnostic('❌ TSLA not found in scanner database', 'red');
+                    }
+                } else {
+                    addDiagnostic('❌ Cannot access main scanner window', 'orange');
+                    addDiagnostic('💡 Try opening this from the main scanner as a popup', 'yellow');
+                    
+                    // Alternative: Open main scanner to get data
+                    const popup = window.open('/', 'mainScanner', 'width=1200,height=800');
+                    addDiagnostic('🔄 Opening main scanner... Wait 3 seconds then try again', 'cyan');
+                    
+                    setTimeout(() => {
+                        if (popup.mockStocks) {
+                            const tslaStock = popup.mockStocks.find(stock => stock.ticker === 'TSLA');
+                            if (tslaStock) {
+                                scannerPrice = tslaStock;
+                                addDiagnostic(`✅ Scanner price found via popup: $${tslaStock.price}`, 'green');
+                                updatePriceDisplay();
+                            }
+                        }
+                    }, 3000);
+                }
+                
+            } catch (error) {
+                addDiagnostic(`❌ Error checking scanner price: ${error.message}`, 'red');
+            }
+        }
+
+        async function comparePrices() {
+            addDiagnostic('🔄 Starting comprehensive price comparison...', 'cyan');
+            
+            // Get both prices
+            await checkLivePrice();
+            await checkScannerPrice();
+            
+            if (livePrice && scannerPrice) {
+                const priceDiff = Math.abs(livePrice.price - scannerPrice.price);
+                const percentDiff = (priceDiff / livePrice.price * 100).toFixed(2);
+                
+                addDiagnostic('📊 COMPARISON RESULTS:', 'yellow');
+                addDiagnostic(`   Live API: $${livePrice.price}`, 'green');
+                addDiagnostic(`   Scanner:  $${scannerPrice.price}`, 'blue');
+                addDiagnostic(`   Difference: $${priceDiff.toFixed(2)} (${percentDiff}%)`, priceDiff > 0.01 ? 'red' : 'green');
+                
+                if (priceDiff > 0.01) {
+                    addDiagnostic('🚨 ISSUE CONFIRMED: Scanner not showing live prices!', 'red');
+                    addDiagnostic('🔧 Possible causes:', 'orange');
+                    addDiagnostic('   1. Live data not updating mockStocks array', 'gray');
+                    addDiagnostic('   2. Scanner still using old mock data', 'gray');
+                    addDiagnostic('   3. UI not refreshing after live update', 'gray');
+                } else {
+                    addDiagnostic('✅ Prices match - live data is working correctly!', 'green');
+                }
+            } else {
+                addDiagnostic('❌ Could not get both prices for comparison', 'red');
+            }
+        }
+        
+        // Auto-run comparison on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addDiagnostic('🚀 Auto-starting price comparison...', 'cyan');
+                comparePrices();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
