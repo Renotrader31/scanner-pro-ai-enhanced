@@ -314,3 +314,13 @@
 📊 Live Data: Polygon API integration ready
 ============================================================
 ✅ Scanner Pro AI serving at port 8000
+[18/Sep/2025 14:59:47] "GET / HTTP/1.1" 200 -
+[18/Sep/2025 15:01:01] "GET / HTTP/1.1" 304 -
+🚀 Scanner Pro AI - Starting HTTP Server...
+📡 Server: http://0.0.0.0:8000
+📁 Directory: /home/user/webapp
+🔍 Mass Scanner: Ready for 4,500+ stocks
+🧠 AI Analysis: Natural language queries supported
+📊 Live Data: Polygon API integration ready
+============================================================
+✅ Scanner Pro AI serving at port 8000

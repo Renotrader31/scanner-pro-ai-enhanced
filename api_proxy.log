@@ -241,3 +241,43 @@
    GET /api/polygon/tickers - Get ticker list
    GET /api/polygon/quote/{ticker} - Get single quote
    GET /api/polygon/batch-quotes?tickers=A,B,C - Get batch quotes
+📡 Proxy request: /api/test
+[18/Sep/2025 14:59:49] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 241 bytes
+📡 Proxy request: /api/polygon/batch-quotes
+[18/Sep/2025 14:59:51] "GET /api/polygon/batch-quotes?tickers=AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX HTTP/1.1" 200 -
+✅ Response sent: 1208 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 15:01:10] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 241 bytes
+📡 Proxy request: /api/polygon/batch-quotes
+[18/Sep/2025 15:01:12] "GET /api/polygon/batch-quotes?tickers=AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX HTTP/1.1" 200 -
+🚀 Scanner Pro AI - FMP Real-Time API Proxy Server
+📡 Proxy Server: http://0.0.0.0:8001
+🔑 FMP API: Ready (Real-time data)
+💰 API Provider: Financial Modeling Prep
+🌐 CORS: Enabled
+⚡ Real-time quotes: ENABLED
+============================================================
+✅ FMP API Proxy serving at port 8001
+📋 Available endpoints:
+   GET /api/test - Test endpoint
+   GET /api/fmp/quote/{ticker} - Get real-time quote
+   GET /api/fmp/batch-quotes?tickers=A,B,C - Get batch quotes
+   GET /api/fmp/realtime-quotes?tickers=A,B,C - Get real-time quotes
+🎯 Ready for LIVE market data!
+📡 Proxy request: /api/test
+[18/Sep/2025 15:05:21] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/quote/TSLA
+🔄 Fetching real-time quote for TSLA from FMP...
+✅ Real-time quote: TSLA = $429.7 (+0.90%)
+[18/Sep/2025 15:05:25] "GET /api/fmp/quote/TSLA HTTP/1.1" 200 -
+✅ Response sent: 387 bytes
+📡 Proxy request: /api/fmp/batch-quotes
+🔄 Fetching real-time batch quotes for: AAPL, NVDA, TSLA
+✅ Fetched 3 real-time quotes from FMP
+   📈 AAPL: $238.67 (-0.13%)
+   📈 NVDA: $175.84 (+3.26%)
+   📈 TSLA: $429.82 (+0.93%)
+[18/Sep/2025 15:05:31] "GET /api/fmp/batch-quotes?tickers=AAPL,NVDA,TSLA HTTP/1.1" 200 -

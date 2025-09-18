@@ -752,7 +752,7 @@
                     <span>All APIs connected • Real-time data active • AI models online</span>
                 </div>
                 <div class="text-gray-400">
-                    Powered by Polygon API, Claude AI, and Advanced ML Models
+                    Powered by Financial Modeling Prep API, Claude AI, and Advanced ML Models
                 </div>
             </div>
         </div>
@@ -989,18 +989,18 @@
         generateMassiveStockDatabase();
 
         // ====================================================================
-        // LIVE DATA INTEGRATION LAYER - Ready for Polygon API Integration
+        // LIVE DATA INTEGRATION LAYER - Ready for FMP (Financial Modeling Prep) Real-Time Integration
         // ====================================================================
 
         // API Configuration - LIVE DATA ENABLED
         const API_CONFIG = {
-            POLYGON_API_KEY: '75rlu6cWGNnIqqR_x8M384YUjBgGk6kT', // Replace with your key
-            POLYGON_BASE_URL: 'https://api.polygon.io',
+            FMP_API_KEY: 'm2XfxOS0sZxs6hLEY5yRzUgDyp5Dur4V', // Your FMP API key
+            FMP_BASE_URL: 'https://financialmodelingprep.com/api/v3',
             FMP_API_KEY: 'm2XfxOS0sZxs6hLEY5yRzUgDyp5Dur4V', // Replace with your key  
             FMP_BASE_URL: 'https://financialmodelingprep.com/api',
             USE_LIVE_DATA: true, // ENABLED for live data
             PROXY_BASE_URL: 'https://8001-ivkoqyg1hwsv2ro9ik8am-6532622b.e2b.dev', // API Proxy server
-            WEBSOCKET_URL: 'wss://socket.polygon.io/stocks',
+            WEBSOCKET_URL: 'wss://websockets.financialmodelingprep.com',
             UPDATE_INTERVAL: 5000, // 5 seconds for live updates
             MAX_BATCH_SIZE: 100 // API batch request size
         };
@@ -1063,7 +1063,7 @@
                     const liveCount = liveData ? liveData.length : 0;
                     const sampleTickers = liveData ? liveData.slice(0, 3).map(stock => `${stock.ticker}: $${stock.price}`).join(', ') : '';
                     
-                    alert(`✅ Live Data Successfully Enabled!\n\n📊 Live Stock Data Retrieved: ${liveCount} stocks\n📈 Sample: ${sampleTickers}\n🔴 Scanner results now showing real-time prices\n\n🎯 Look for:\n• Green "Live Data Active" indicator\n• Updated stock prices in scanner results\n• Real-time volume data`);
+                    alert(`✅ REAL-TIME Data Successfully Enabled!\n\n📊 FMP Live Stock Data Retrieved: ${liveCount} stocks\n📈 Sample: ${sampleTickers}\n🔴 Scanner results now showing REAL-TIME market prices\n\n🎯 Look for:\n• Green "Live Data Active" indicator\n• Updated stock prices with current market values\n• Real-time volume data from FMP API`);
                     
                 } catch (error) {
                     console.error('❌ Live data activation failed:', error);
@@ -1101,9 +1101,10 @@
                     const testData = await testResponse.json();
                     console.log('✅ Proxy connection successful:', testData.message);
                     
-                    // Fetch batch quotes for popular stocks
+                    // Fetch real-time quotes from FMP for popular stocks
                     const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX';
-                    const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/batch-quotes?tickers=${tickers}`);
+                    console.log('🚀 Fetching REAL-TIME quotes from FMP API...');
+                    const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/realtime-quotes?tickers=${tickers}`);
                     
                     if (!response.ok) {
                         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
@@ -1132,14 +1133,14 @@
                 } catch (error) {
                     console.error('❌ Live data fetch error:', error);
                     
-                    // Try fallback API endpoint
+                    // Try fallback FMP API endpoint
                     try {
-                        console.log('🔄 Trying fallback API connection...');
-                        const fallbackResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/quote/AAPL`);
+                        console.log('🔄 Trying fallback FMP connection...');
+                        const fallbackResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/quote/AAPL`);
                         
                         if (fallbackResponse.ok) {
                             const fallbackData = await fallbackResponse.json();
-                            console.log('✅ Fallback API working:', fallbackData);
+                            console.log('✅ Fallback FMP API working:', fallbackData);
                             
                             if (fallbackData.status === 'success') {
                                 const liveData = [{
@@ -1313,14 +1314,14 @@
                 
                 // Test 3: Try a simple quote
                 console.log('🔄 Testing single quote directly...');
-                const quoteResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/quote/AAPL`);
+                const quoteResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/quote/AAPL`);
                 const quoteData = await quoteResponse.json();
                 console.log('✅ Quote result:', quoteData);
                 
                 // Test 4: Try the exact same call as enableLiveData
                 console.log('🔄 Testing batch quotes (same as enableLiveData)...');
                 const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX';
-                const batchResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/polygon/batch-quotes?tickers=${tickers}`);
+                const batchResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/realtime-quotes?tickers=${tickers}`);
                 const batchData = await batchResponse.json();
                 console.log('✅ Batch result:', batchData);
                 

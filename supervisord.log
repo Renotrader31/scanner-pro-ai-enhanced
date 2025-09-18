@@ -135,3 +135,11 @@
 2025-09-18 14:54:35,963 INFO spawned: 'scanner_pro_ai' with pid 40189
 2025-09-18 14:54:37,060 INFO success: api_proxy entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2025-09-18 14:54:37,060 INFO success: scanner_pro_ai entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-18 15:05:07,684 INFO waiting for api_proxy to stop
+2025-09-18 15:05:07,686 WARN stopped: api_proxy (terminated by SIGTERM)
+2025-09-18 15:05:07,693 INFO spawned: 'api_proxy' with pid 42130
+2025-09-18 15:05:08,804 INFO success: api_proxy entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-18 15:05:13,481 INFO waiting for scanner_pro_ai to stop
+2025-09-18 15:05:13,483 WARN stopped: scanner_pro_ai (terminated by SIGTERM)
+2025-09-18 15:05:13,487 INFO spawned: 'scanner_pro_ai' with pid 42144
+2025-09-18 15:05:14,589 INFO success: scanner_pro_ai entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
