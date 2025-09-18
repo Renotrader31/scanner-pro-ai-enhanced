@@ -1022,14 +1022,15 @@
         // LIVE DATA INTEGRATION LAYER - Ready for FMP (Financial Modeling Prep) Real-Time Integration
         // ====================================================================
 
-        // API Configuration - LIVE DATA ENABLED
+        // API Configuration - PRODUCTION READY
         const API_CONFIG = {
             FMP_API_KEY: 'm2XfxOS0sZxs6hLEY5yRzUgDyp5Dur4V', // Your FMP API key
             FMP_BASE_URL: 'https://financialmodelingprep.com/api/v3',
-            FMP_API_KEY: 'm2XfxOS0sZxs6hLEY5yRzUgDyp5Dur4V', // Replace with your key  
-            FMP_BASE_URL: 'https://financialmodelingprep.com/api',
             USE_LIVE_DATA: true, // ENABLED for live data
-            PROXY_BASE_URL: 'https://8001-is1pytsu7vtueafbe0oix-6532622b.e2b.dev', // API Proxy server
+            // Auto-detect environment - use relative URLs for production deployment
+            PROXY_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname.includes('e2b.dev') 
+                ? 'https://8001-is1pytsu7vtueafbe0oix-6532622b.e2b.dev'  // Sandbox
+                : '', // Production - relative URLs for Vercel functions
             WEBSOCKET_URL: 'wss://websockets.financialmodelingprep.com',
             UPDATE_INTERVAL: 5000, // 5 seconds for live updates
             MAX_BATCH_SIZE: 100 // API batch request size
@@ -1134,7 +1135,7 @@
                     // NEW: Use bulk universe endpoint for much larger stock coverage
                     const selectedUniverse = document.getElementById('universeSelector')?.value || 'popular';
                     console.log(`🚀 Fetching ${selectedUniverse.toUpperCase()} universe from FMP API...`);
-                    const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/bulk-quotes?universe=${selectedUniverse}`);
+                    const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/bulk-quotes?universe=${selectedUniverse}`);
                     
                     if (!response.ok) {
                         throw new Error(`API request failed: ${response.status} ${response.statusText}`);

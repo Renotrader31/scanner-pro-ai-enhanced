@@ -686,3 +686,120 @@
 🔄 Processing batch 3: SDIG, WULF, IREN, CORZ, CIFR, BTC, GREE, SPRT
 ✅ Successfully fetched 23 quotes from crypto_miners universe
 [18/Sep/2025 17:51:59] "GET /api/fmp/bulk-quotes?universe=crypto_miners HTTP/1.1" 200 -
+✅ Response sent: 7845 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:56:06] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: popular
+📊 Processing 48 stocks for popular universe
+🔄 Processing batch 1: AAPL, MSFT, NVDA, GOOGL, GOOG, AMZN, META, TSLA
+🔄 Processing batch 2: NFLX, AMD, CRM, INTC, ORCL, ADBE, CSCO, AVGO
+🔄 Processing batch 3: JPM, BAC, WFC, GS, MS, C, AXP, BLK
+🔄 Processing batch 4: JNJ, PFE, UNH, ABBV, MRK, TMO, ABT, DHR
+🔄 Processing batch 5: KO, PEP, WMT, HD, MCD, DIS, NKE, SBUX
+🔄 Processing batch 6: XOM, CVX, COP, EOG, SLB, MPC, VLO, PSX
+✅ Successfully fetched 48 quotes from popular universe
+[18/Sep/2025 17:56:09] "GET /api/fmp/bulk-quotes?universe=popular HTTP/1.1" 200 -
+✅ Response sent: 16063 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:56:16] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: crypto_miners
+📊 Processing 24 stocks for crypto_miners universe
+🔄 Processing batch 1: MSTR, COIN, MARA, RIOT, CLSK, BITF, HUT, BTBT
+🔄 Processing batch 2: CAN, ARGO, EBON, SOS, ANY, EBANG, NCTY, PHUN
+🔄 Processing batch 3: SDIG, WULF, IREN, CORZ, CIFR, BTC, GREE, SPRT
+✅ Successfully fetched 23 quotes from crypto_miners universe
+[18/Sep/2025 17:56:18] "GET /api/fmp/bulk-quotes?universe=crypto_miners HTTP/1.1" 200 -
+✅ Response sent: 7831 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:57:07] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: dividends
+📊 Processing 28 stocks for dividends universe
+🔄 Processing batch 1: KO, PEP, JNJ, PG, WMT, MCD, MMM, CAT
+🔄 Processing batch 2: IBM, VZ, T, CVX, XOM, JPM, HD, LOW
+🔄 Processing batch 3: TGT, COST, SBUX, NKE, O, AMT, PLD, CCI
+🔄 Processing batch 4: EQIX, SPG, AVB, EQR
+✅ Successfully fetched 28 quotes from dividends universe
+[18/Sep/2025 17:57:09] "GET /api/fmp/bulk-quotes?universe=dividends HTTP/1.1" 200 -
+✅ Response sent: 9503 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:57:25] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: growth
+📊 Processing 24 stocks for growth universe
+🔄 Processing batch 1: NVDA, TSLA, AMD, CRM, SHOP, SQ, ROKU, ZM
+🔄 Processing batch 2: PLTR, SNOW, NET, DDOG, CRWD, ZS, OKTA, TWLO
+🔄 Processing batch 3: TEAM, DOCU, SPLK, WDAY, NOW, VEEV, ADSK, ANSS
+✅ Successfully fetched 24 quotes from growth universe
+[18/Sep/2025 17:57:26] "GET /api/fmp/bulk-quotes?universe=growth HTTP/1.1" 200 -
+✅ Response sent: 8132 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:57:43] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: ev_future
+📊 Processing 26 stocks for ev_future universe
+🔄 Processing batch 1: TSLA, RIVN, LCID, NIO, XPEV, LI, FSR, GOEV
+🔄 Processing batch 2: RIDE, F, GM, FORD, TM, HMC, CHPT, BLNK
+🔄 Processing batch 3: EVgo, PLUG, BE, QS, STEM, ENPH, SEDG, RUN
+🔄 Processing batch 4: NOVA, FSLR
+✅ Successfully fetched 26 quotes from ev_future universe
+[18/Sep/2025 17:57:46] "GET /api/fmp/bulk-quotes?universe=ev_future HTTP/1.1" 200 -
+✅ Response sent: 8777 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:58:02] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: meme
+📊 Processing 16 stocks for meme universe
+🔄 Processing batch 1: GME, AMC, BBBY, NOK, BB, KOSS, EXPR, CLOV
+🔄 Processing batch 2: WISH, SOFI, PLTR, SPCE, NIO, RIVN, LCID, HOOD
+✅ Successfully fetched 16 quotes from meme universe
+[18/Sep/2025 17:58:03] "GET /api/fmp/bulk-quotes?universe=meme HTTP/1.1" 200 -
+✅ Response sent: 5379 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:58:14] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: russell2000
+📊 Processing 32 stocks for russell2000 universe
+🔄 Processing batch 1: SMCI, IWM, MSTR, COIN, UPST, AFRM, BROS, CELH
+🔄 Processing batch 2: ENPH, FSLR, PLUG, BLNK, CHPT, LCID, RIVN, FFIE
+🔄 Processing batch 3: SOUN, RDDT, TPG, SOLV, CVNA, OPEN, RKT, UWMC
+🔄 Processing batch 4: RBLX, PATH, DKNG, PENN, FUBO, GENI, APPS, BMBL
+✅ Successfully fetched 32 quotes from russell2000 universe
+[18/Sep/2025 17:58:20] "GET /api/fmp/bulk-quotes?universe=russell2000 HTTP/1.1" 200 -
+✅ Response sent: 10832 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:59:03] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: sp500_top50
+📊 Processing 50 stocks for sp500_top50 universe
+🔄 Processing batch 1: AAPL, MSFT, NVDA, AMZN, GOOGL, GOOG, META, TSLA
+🔄 Processing batch 2: BRK-B, LLY, AVGO, JPM, WMT, V, UNH, XOM
+🔄 Processing batch 3: MA, PG, JNJ, HD, CVX, ABBV, NFLX, BAC
+🔄 Processing batch 4: KO, CRM, COST, ASML, MRK, AMD, PEP, TMO
+🔄 Processing batch 5: LIN, ACN, CSCO, ABT, ADBE, DHR, TXN, MCD
+🔄 Processing batch 6: VZ, NEE, ORCL, WFC, PM, COP, NVS, BMY
+🔄 Processing batch 7: DIS, INTC
+✅ Successfully fetched 50 quotes from sp500_top50 universe
+[18/Sep/2025 17:59:14] "GET /api/fmp/bulk-quotes?universe=sp500_top50 HTTP/1.1" 200 -
+✅ Response sent: 16981 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 18:01:09] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: growth
+📊 Processing 24 stocks for growth universe
+🔄 Processing batch 1: NVDA, TSLA, AMD, CRM, SHOP, SQ, ROKU, ZM
+🔄 Processing batch 2: PLTR, SNOW, NET, DDOG, CRWD, ZS, OKTA, TWLO
+🔄 Processing batch 3: TEAM, DOCU, SPLK, WDAY, NOW, VEEV, ADSK, ANSS
+✅ Successfully fetched 24 quotes from growth universe
+[18/Sep/2025 18:01:11] "GET /api/fmp/bulk-quotes?universe=growth HTTP/1.1" 200 -
