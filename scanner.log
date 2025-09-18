@@ -384,3 +384,9 @@
 ============================================================
 ✅ Scanner Pro AI serving at port 8000
 [18/Sep/2025 17:55:57] "GET / HTTP/1.1" 200 -
+[18/Sep/2025 19:22:44] "GET /test_direct_fmp.html HTTP/1.1" 200 -
+[18/Sep/2025 19:22:44] code 404, message File not found
+[18/Sep/2025 19:22:44] "GET /favicon.ico HTTP/1.1" 404 -
+[18/Sep/2025 19:22:53] "GET / HTTP/1.1" 200 -
+[18/Sep/2025 19:22:53] code 404, message File not found
+[18/Sep/2025 19:22:53] "GET /favicon.ico HTTP/1.1" 404 -

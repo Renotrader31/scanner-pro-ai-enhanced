@@ -1042,7 +1042,7 @@
                     console.log('🌐 Using PRODUCTION mode (custom domain)');
                     return window.location.origin;
                 }
-            })()
+            })(),
             WEBSOCKET_URL: 'wss://websockets.financialmodelingprep.com',
             UPDATE_INTERVAL: 5000, // 5 seconds for live updates
             MAX_BATCH_SIZE: 100 // API batch request size
@@ -1121,9 +1121,8 @@
             },
             
             fetchLiveStockData: async function() {
-                console.log('🔄 fetchLiveStockData() called');
+                console.log('🔄 fetchLiveStockData() called - USING DIRECT FMP API');
                 console.log('📊 API_CONFIG.USE_LIVE_DATA:', API_CONFIG.USE_LIVE_DATA);
-                console.log('📊 API_CONFIG.PROXY_BASE_URL:', API_CONFIG.PROXY_BASE_URL);
                 
                 if (!API_CONFIG.USE_LIVE_DATA) {
                     console.log('❌ Live data disabled in config');
@@ -1131,91 +1130,186 @@
                 }
                 
                 try {
-                    console.log('🔄 Fetching live data via API proxy...');
-                    console.log('🔗 Proxy URL:', API_CONFIG.PROXY_BASE_URL);
-                    console.log('🌐 Full test URL:', `${API_CONFIG.PROXY_BASE_URL}/api/test`);
-                    
-                    // First test the proxy connection
-                    console.log('📡 Testing connection to:', `${API_CONFIG.PROXY_BASE_URL}/api/test`);
-                    const testResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
-                    
-                    if (!testResponse.ok) {
-                        console.error('❌ Test response failed:', {
-                            status: testResponse.status,
-                            statusText: testResponse.statusText,
-                            url: testResponse.url
-                        });
-                        throw new Error(`Proxy test failed: ${testResponse.status} ${testResponse.statusText}`);
-                    }
-                    
-                    const testData = await testResponse.json();
-                    console.log('✅ Proxy connection successful:', testData.message);
-                    
-                    // NEW: Use bulk universe endpoint for much larger stock coverage
+                    // Get selected universe
                     const selectedUniverse = document.getElementById('universeSelector')?.value || 'popular';
-                    console.log(`🚀 Fetching ${selectedUniverse.toUpperCase()} universe from FMP API...`);
-                    const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/bulk-quotes?universe=${selectedUniverse}`);
+                    console.log(`🚀 Fetching ${selectedUniverse.toUpperCase()} universe directly from FMP API...`);
                     
-                    if (!response.ok) {
-                        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-                    }
-                    
-                    const data = await response.json();
-                    
-                    if (data.status === 'success' && data.quotes && data.quotes.length > 0) {
-                        console.log(`✅ Live data fetched: ${data.quotes.length} stocks`);
-                        
-                        // Transform to our internal format
-                        const liveData = data.quotes.map(quote => ({
-                            ticker: quote.ticker,
-                            price: quote.price,
-                            change: quote.change,
-                            volume: this.formatVolume(quote.volume),
-                            timestamp: new Date().toLocaleTimeString()
-                        }));
-                        
-                        this.updateStockDatabase(liveData);
-                        return liveData;
-                    } else {
-                        throw new Error(data.message || 'No live data received from APIs');
-                    }
+                    // Use direct FMP API with comprehensive universe support
+                    return await this.fetchDirectFMPData(selectedUniverse);
                     
                 } catch (error) {
                     console.error('❌ Live data fetch error:', error);
-                    
-                    // Try direct FMP API as ultimate fallback
-                    try {
-                        console.log('🔄 Trying DIRECT FMP API fallback...');
-                        const directUrl = `https://financialmodelingprep.com/api/v3/quote/AAPL,MSFT,NVDA,GOOGL,TSLA?apikey=${API_CONFIG.FMP_API_KEY}`;
-                        console.log('🌐 Direct FMP URL:', directUrl);
-                        const fallbackResponse = await fetch(directUrl);
-                        
-                        if (fallbackResponse.ok) {
-                            const fallbackData = await fallbackResponse.json();
-                            console.log('✅ DIRECT FMP API working:', fallbackData);
-                            
-                            if (Array.isArray(fallbackData) && fallbackData.length > 0) {
-                                const liveData = fallbackData.map(stock => ({
-                                    ticker: stock.symbol,
-                                    price: stock.price,
-                                    change: stock.changesPercentage,
-                                    volume: this.formatVolume(stock.volume),
-                                    market_cap: stock.marketCap,
-                                    pe: stock.pe,
-                                    timestamp: new Date().toLocaleTimeString()
-                                }));
-                                
-                                console.log(`✅ Direct FMP: Got ${liveData.length} stocks`);
-                                this.updateStockDatabase(liveData);
-                                return liveData;
-                            }
-                        }
-                    } catch (fallbackError) {
-                        console.error('❌ Fallback API also failed:', fallbackError);
-                    }
-                    
                     throw error;
                 }
+            },
+            
+            fetchDirectFMPData: async function(universe) {
+                console.log('🌐 DIRECT FMP API - Fetching universe:', universe);
+                
+                // Define comprehensive stock universes (same as Python backend)
+                const universes = {
+                    'popular': [
+                        // Mega Cap Tech
+                        'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'GOOG', 'AMZN', 'META', 'TSLA',
+                        // Large Cap Tech  
+                        'NFLX', 'AMD', 'CRM', 'INTC', 'ORCL', 'ADBE', 'CSCO', 'AVGO',
+                        // Finance
+                        'JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'AXP', 'BLK',
+                        // Healthcare
+                        'JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'TMO', 'ABT', 'DHR',
+                        // Consumer
+                        'KO', 'PEP', 'WMT', 'HD', 'MCD', 'DIS', 'NKE', 'SBUX',
+                        // Energy
+                        'XOM', 'CVX', 'COP', 'EOG', 'SLB', 'MPC', 'VLO', 'PSX'
+                    ],
+                    'sp500_top50': [
+                        'AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'GOOG', 'META', 'TSLA',
+                        'BRK-B', 'LLY', 'AVGO', 'JPM', 'WMT', 'V', 'UNH', 'XOM',
+                        'MA', 'PG', 'JNJ', 'HD', 'CVX', 'ABBV', 'NFLX', 'BAC',
+                        'KO', 'CRM', 'COST', 'ASML', 'MRK', 'AMD', 'PEP', 'TMO',
+                        'LIN', 'ACN', 'CSCO', 'ABT', 'ADBE', 'DHR', 'TXN', 'MCD',
+                        'VZ', 'NEE', 'ORCL', 'WFC', 'PM', 'COP', 'NVS', 'BMY',
+                        'DIS', 'INTC'
+                    ],
+                    'growth': [
+                        'NVDA', 'TSLA', 'AMD', 'CRM', 'SHOP', 'SQ', 'ROKU', 'ZM',
+                        'PLTR', 'SNOW', 'NET', 'DDOG', 'CRWD', 'ZS', 'OKTA', 'TWLO',
+                        'TEAM', 'DOCU', 'SPLK', 'WDAY', 'NOW', 'VEEV', 'ADSK', 'ANSS'
+                    ],
+                    'meme': [
+                        'GME', 'AMC', 'BBBY', 'NOK', 'BB', 'KOSS', 'EXPR', 'CLOV',
+                        'WISH', 'SOFI', 'PLTR', 'SPCE', 'NIO', 'RIVN', 'LCID', 'HOOD'
+                    ],
+                    'russell2000': [
+                        'SMCI', 'IWM', 'MSTR', 'COIN', 'UPST', 'AFRM', 'BROS', 'CELH',
+                        'ENPH', 'FSLR', 'PLUG', 'BLNK', 'CHPT', 'LCID', 'RIVN', 'FFIE',
+                        'SOUN', 'RDDT', 'TPG', 'SOLV', 'CVNA', 'OPEN', 'RKT', 'UWMC',
+                        'RBLX', 'PATH', 'DKNG', 'PENN', 'FUBO', 'GENI', 'APPS', 'BMBL'
+                    ],
+                    'tech_pure': [
+                        'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'META', 'TSLA', 'CRM', 'ORCL',
+                        'ADBE', 'NOW', 'INTU', 'AMD', 'QCOM', 'INTC', 'TXN', 'LRCX',
+                        'KLAC', 'AMAT', 'MU', 'NXPI', 'MRVL', 'ADI', 'SNPS', 'CDNS'
+                    ],
+                    'biotech': [
+                        'GILD', 'AMGN', 'BIIB', 'REGN', 'VRTX', 'ILMN', 'MRNA', 'BNTX',
+                        'SGEN', 'ALNY', 'BMRN', 'TECH', 'SRPT', 'RARE', 'BLUE', 'FOLD',
+                        'ARWR', 'EDIT', 'CRSP', 'NTLA', 'BEAM', 'PRME', 'VCYT', 'PACB'
+                    ],
+                    'energy_oil': [
+                        'XOM', 'CVX', 'COP', 'EOG', 'SLB', 'HAL', 'BKR', 'OXY',
+                        'KMI', 'WMB', 'MPC', 'VLO', 'PSX', 'HES', 'DVN', 'FANG',
+                        'APA', 'EQT', 'CNX', 'RRC', 'CLR', 'MRO', 'OVV', 'SM'
+                    ],
+                    'financials': [
+                        'JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'AXP', 'BLK', 'SPGI', 'ICE',
+                        'CME', 'MCO', 'TRV', 'PGR', 'ALL', 'AIG', 'MET', 'PRU', 'AFL', 'AMP',
+                        'COF', 'DFS', 'SYF', 'ALLY', 'SOFI', 'AFRM', 'UPST', 'LC'
+                    ],
+                    'crypto_miners': [
+                        'MSTR', 'COIN', 'MARA', 'RIOT', 'CLSK', 'BITF', 'HUT', 'BTBT',
+                        'CAN', 'ARGO', 'EBON', 'SOS', 'ANY', 'EBANG', 'NCTY', 'PHUN',
+                        'SDIG', 'WULF', 'IREN', 'CORZ', 'CIFR', 'BTC', 'GREE', 'SPRT'
+                    ],
+                    'dividends': [
+                        'KO', 'PEP', 'JNJ', 'PG', 'WMT', 'MCD', 'MMM', 'CAT', 'IBM', 'VZ',
+                        'T', 'CVX', 'XOM', 'JPM', 'HD', 'LOW', 'TGT', 'COST', 'SBUX', 'NKE',
+                        'O', 'AMT', 'PLD', 'CCI', 'EQIX', 'SPG', 'AVB', 'EQR'
+                    ],
+                    'ark_stocks': [
+                        'TSLA', 'ROKU', 'SQ', 'COIN', 'HOOD', 'DNA', 'CRSP', 'EDIT', 'NTLA',
+                        'BEAM', 'PACB', 'ILMN', 'TXG', 'RBLX', 'PATH', 'U', 'DKNG', 'Z',
+                        'TWLO', 'SHOP', 'SPOT', 'ZM', 'TDOC', 'TELADOC', 'PINS', 'SNAP'
+                    ],
+                    'ev_future': [
+                        'TSLA', 'RIVN', 'LCID', 'NIO', 'XPEV', 'LI', 'FSR', 'GOEV', 'RIDE',
+                        'F', 'GM', 'FORD', 'TM', 'HMC', 'CHPT', 'BLNK', 'EVgo', 'PLUG',
+                        'BE', 'QS', 'STEM', 'ENPH', 'SEDG', 'RUN', 'NOVA', 'FSLR'
+                    ],
+                    'spacs_hot': [
+                        'SPCE', 'OPEN', 'CLOV', 'SOFI', 'HOOD', 'DKNG', 'SKLZ', 'BMBL',
+                        'COUR', 'MAPS', 'BIRD', 'UBER', 'LYFT', 'DASH', 'ABNB', 'SNOW'
+                    ],
+                    'high_volume': [
+                        'SPY', 'QQQ', 'IWM', 'AAPL', 'TSLA', 'NVDA', 'AMD', 'SQQQ', 'TQQQ',
+                        'SPXU', 'SPXL', 'TNA', 'TZA', 'LABU', 'LABD', 'TECL', 'SOXL', 'SOXS',
+                        'UDOW', 'SDOW', 'FAS', 'FAZ', 'CURE', 'YINN', 'YANG', 'KWEB'
+                    ],
+                    'volatility': [
+                        'TSLA', 'GME', 'AMC', 'BBBY', 'MSTR', 'COIN', 'MARA', 'RIOT', 'PLTR',
+                        'SPCE', 'LCID', 'RIVN', 'NIO', 'SNAP', 'TWTR', 'NFLX', 'ZM', 'PELOTON',
+                        'UPST', 'AFRM', 'ROKU', 'SQ', 'DKNG', 'PENN', 'FUBO', 'HOOD', 'RBLX'
+                    ]
+                };
+                
+                // Get tickers for the requested universe
+                const tickerList = universes[universe] || universes['popular'];
+                console.log(`📊 Processing ${tickerList.length} stocks for ${universe} universe`);
+                
+                const quotes = [];
+                const batchSize = 8; // Process 8 stocks per batch for stability
+                
+                // Process in batches to avoid API limits
+                for (let i = 0; i < tickerList.length; i += batchSize) {
+                    const batch = tickerList.slice(i, i + batchSize);
+                    console.log(`🔄 Processing batch ${Math.floor(i/batchSize) + 1}: ${batch.join(', ')}`);
+                    
+                    try {
+                        // Use FMP batch quote endpoint
+                        const tickerString = batch.join(',');
+                        const url = `${API_CONFIG.FMP_BASE_URL}/quote/${tickerString}?apikey=${API_CONFIG.FMP_API_KEY}`;
+                        
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            console.warn(`⚠️ Batch ${Math.floor(i/batchSize) + 1} failed:`, response.status);
+                            continue;
+                        }
+                        
+                        const data = await response.json();
+                        if (data && Array.isArray(data)) {
+                            for (const quote of data) {
+                                quotes.push({
+                                    ticker: quote.symbol,
+                                    price: quote.price,
+                                    change: quote.changesPercentage,
+                                    change_amount: quote.change,
+                                    volume: quote.volume,
+                                    market_cap: quote.marketCap,
+                                    pe: quote.pe,
+                                    timestamp: new Date().toLocaleTimeString(),
+                                    is_real_time: true,
+                                    source: 'FMP Direct API'
+                                });
+                            }
+                            console.log(`   ✅ Batch ${Math.floor(i/batchSize) + 1}: ${data.length} stocks fetched`);
+                        }
+                        
+                        // Add small delay between batches to avoid rate limits
+                        if (i + batchSize < tickerList.length) {
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                        }
+                        
+                    } catch (error) {
+                        console.warn(`⚠️ Error processing batch ${Math.floor(i/batchSize) + 1}:`, error);
+                        continue;
+                    }
+                }
+                
+                console.log(`✅ DIRECT FMP API: Successfully fetched ${quotes.length} stocks`);
+                
+                // Transform to internal format
+                const liveData = quotes.map(quote => ({
+                    ticker: quote.ticker,
+                    price: quote.price,
+                    change: quote.change,
+                    volume: this.formatVolume(quote.volume),
+                    market_cap: quote.market_cap,
+                    pe: quote.pe,
+                    timestamp: quote.timestamp
+                }));
+                
+                this.updateStockDatabase(liveData);
+                return liveData;
             },
             
             updateStockDatabase: function(liveData) {
