@@ -1101,8 +1101,8 @@
                     const testData = await testResponse.json();
                     console.log('✅ Proxy connection successful:', testData.message);
                     
-                    // Fetch real-time quotes from FMP for popular stocks
-                    const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX';
+                    // Fetch real-time quotes from FMP for popular stocks (expanded list)
+                    const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX,AMD,CRM,INTC,BABA,DIS,JPM,JNJ,PFE,KO,WMT,V,MA';
                     console.log('🚀 Fetching REAL-TIME quotes from FMP API...');
                     const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/realtime-quotes?tickers=${tickers}`);
                     
@@ -1320,7 +1320,7 @@
                 
                 // Test 4: Try the exact same call as enableLiveData
                 console.log('🔄 Testing batch quotes (same as enableLiveData)...');
-                const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX';
+                const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX,AMD,CRM,INTC,BABA,DIS,JPM,JNJ,PFE,KO,WMT,V,MA';
                 const batchResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/realtime-quotes?tickers=${tickers}`);
                 const batchData = await batchResponse.json();
                 console.log('✅ Batch result:', batchData);
@@ -1455,6 +1455,7 @@
         function performScan() {
             console.log('🔄 performScan() called');
             console.log('📊 mockStocks available:', mockStocks ? mockStocks.length : 'undefined');
+            console.log('📊 dataManager.isLive:', dataManager ? dataManager.isLive : 'undefined');
             
             // Safely get DOM element values with fallbacks
             const scanTypeEl = document.getElementById('scanType');
@@ -1484,8 +1485,37 @@
             const minChange = parseFloat(document.getElementById('minChange')?.value) || -999;
             const maxChange = parseFloat(document.getElementById('maxChange')?.value) || 999;
 
-            // Apply filters to mock stocks
-            let results = mockStocks.filter(stock => {
+            // **LIVE DATA INTEGRATION** - Choose data source based on live data status
+            let sourceStocks = mockStocks;
+            if (dataManager && dataManager.isLive) {
+                console.log('🚀 LIVE MODE: Using live data stocks only');
+                // Filter to show only stocks that have been updated with live data (have timestamp)
+                sourceStocks = mockStocks.filter(stock => stock.timestamp);
+                console.log(`📊 Live stocks available: ${sourceStocks.length}`);
+                
+                // If no live stocks available yet, show message and return
+                if (sourceStocks.length === 0) {
+                    console.log('⚠️ No live stocks available yet, fetching...');
+                    document.getElementById('scanResults').innerHTML = `
+                        <tr>
+                            <td colspan="10" class="text-center p-8 text-gray-400">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>
+                                Fetching live market data... Please wait.
+                            </td>
+                        </tr>
+                    `;
+                    // Trigger live data fetch
+                    if (dataManager.fetchLiveStockData) {
+                        dataManager.fetchLiveStockData();
+                    }
+                    return;
+                }
+            } else {
+                console.log('🟡 DEMO MODE: Using mock database');
+            }
+
+            // Apply filters to source stocks
+            let results = sourceStocks.filter(stock => {
                 // Basic filters
                 if (stock.price < minPrice || stock.price > maxPrice) return false;
                 if (parseFloat(stock.volume.replace(/[^0-9.]/g, '')) * 1000000 < minVolume) return false;
@@ -1679,9 +1709,13 @@
                     console.log('Full stock object:', stock);
                 }
                 
+                // Check if this stock has live data (has timestamp)
+                const isLiveData = stock.timestamp ? true : false;
+                const liveIndicator = isLiveData ? '<span class="text-xs text-green-400 font-semibold">🔴 LIVE</span>' : '';
+                
                 row.innerHTML = `
                     <td class="p-3">
-                        <div class="font-bold text-blue-400">${stock.ticker}</div>
+                        <div class="font-bold text-blue-400">${stock.ticker} ${liveIndicator}</div>
                         <div class="text-xs text-gray-500">${stock.marketCap}</div>
                     </td>
                     <td class="p-3">
@@ -1741,14 +1775,26 @@
                 
                 const scannedCountEl = document.getElementById('scannedCount');
                 if (scannedCountEl) {
-                    scannedCountEl.textContent = mockStocks.length.toLocaleString();
+                    // Show different total based on live data mode
+                    if (dataManager && dataManager.isLive) {
+                        const liveStockCount = mockStocks.filter(stock => stock.timestamp).length;
+                        scannedCountEl.textContent = `${liveStockCount} LIVE`;
+                    } else {
+                        scannedCountEl.textContent = mockStocks.length.toLocaleString();
+                    }
                 } else {
                     console.warn('⚠️ scannedCount element not found');
                 }
                 
                 const totalStockCountEl = document.getElementById('totalStockCount');
                 if (totalStockCountEl) {
-                    totalStockCountEl.textContent = mockStocks.length.toLocaleString();
+                    // Update header total count based on mode
+                    if (dataManager && dataManager.isLive) {
+                        const liveStockCount = mockStocks.filter(stock => stock.timestamp).length;
+                        totalStockCountEl.textContent = `${liveStockCount} LIVE`;
+                    } else {
+                        totalStockCountEl.textContent = mockStocks.length.toLocaleString() + '+';
+                    }
                 }
                 
                 // Update data source indicator with safety checks
