@@ -97,10 +97,34 @@
                             <i class="fas fa-wifi mr-2"></i>Enable Live Data
                         </button>
                         <select id="universeSelector" onchange="changeUniverse()" class="px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm">
-                            <option value="popular">Popular Stocks (40+)</option>
-                            <option value="sp500_top50">S&P 500 Top 50</option>
-                            <option value="growth">Growth Stocks (24)</option>
-                            <option value="meme">Meme Stocks (16)</option>
+                            <optgroup label="🔥 MEGA LISTS">
+                                <option value="popular">Popular Stocks (48)</option>
+                                <option value="sp500_top50">S&P 500 Top 50 (50)</option>
+                                <option value="russell2000">Russell 2000 Leaders (32)</option>
+                            </optgroup>
+                            <optgroup label="📊 BY SECTOR">
+                                <option value="tech_pure">Pure Tech (24)</option>
+                                <option value="biotech">Biotech (24)</option>
+                                <option value="energy_oil">Energy & Oil (24)</option>
+                                <option value="financials">Banks & Finance (28)</option>
+                            </optgroup>
+                            <optgroup label="🚀 GROWTH & MOMENTUM">
+                                <option value="growth">Growth Stars (24)</option>
+                                <option value="ark_stocks">ARK Innovation (26)</option>
+                                <option value="ev_future">EV & Clean Energy (27)</option>
+                                <option value="spacs_hot">Hot SPACs (16)</option>
+                            </optgroup>
+                            <optgroup label="⛏️ CRYPTO & DIGITAL">
+                                <option value="crypto_miners">Bitcoin Miners (24)</option>
+                            </optgroup>
+                            <optgroup label="🎯 TRADING FOCUSED">
+                                <option value="meme">Meme Stocks (16)</option>
+                                <option value="high_volume">High Volume ETFs (27)</option>
+                                <option value="volatility">Volatility Plays (27)</option>
+                            </optgroup>
+                            <optgroup label="💰 INCOME & STABILITY">
+                                <option value="dividends">Dividend Kings (28)</option>
+                            </optgroup>
                         </select>
                         <button onclick="refreshLiveData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-all">
                             <i class="fas fa-sync mr-2"></i>Refresh Data

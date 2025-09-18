@@ -236,7 +236,7 @@ class APIProxyHandler(http.server.BaseHTTPRequestHandler):
         try:
             print(f"🚀 Fetching BULK UNIVERSE: {universe}")
             
-            # Define stock universes
+            # Define comprehensive stock universes for professional trading
             universes = {
                 'popular': [
                     # Mega Cap Tech
@@ -261,6 +261,8 @@ class APIProxyHandler(http.server.BaseHTTPRequestHandler):
                     'VZ', 'NEE', 'ORCL', 'WFC', 'PM', 'COP', 'NVS', 'BMY',
                     'DIS', 'INTC'
                 ],
+                
+                # 🚀 GROWTH & HIGH-MOMENTUM STOCKS
                 'growth': [
                     'NVDA', 'TSLA', 'AMD', 'CRM', 'SHOP', 'SQ', 'ROKU', 'ZM',
                     'PLTR', 'SNOW', 'NET', 'DDOG', 'CRWD', 'ZS', 'OKTA', 'TWLO',
@@ -269,6 +271,78 @@ class APIProxyHandler(http.server.BaseHTTPRequestHandler):
                 'meme': [
                     'GME', 'AMC', 'BBBY', 'NOK', 'BB', 'KOSS', 'EXPR', 'CLOV',
                     'WISH', 'SOFI', 'PLTR', 'SPCE', 'NIO', 'RIVN', 'LCID', 'HOOD'
+                ],
+                
+                # 📊 RUSSELL 2000 SMALL CAPS (High-volume leaders)
+                'russell2000': [
+                    'SMCI', 'IWM', 'MSTR', 'COIN', 'UPST', 'AFRM', 'BROS', 'CELH',
+                    'ENPH', 'FSLR', 'PLUG', 'BLNK', 'CHPT', 'LCID', 'RIVN', 'FFIE',
+                    'SOUN', 'RDDT', 'TPG', 'SOLV', 'CVNA', 'OPEN', 'RKT', 'UWMC',
+                    'RBLX', 'PATH', 'DKNG', 'PENN', 'FUBO', 'GENI', 'APPS', 'BMBL'
+                ],
+                
+                # 🏭 SECTOR-SPECIFIC UNIVERSES
+                'tech_pure': [
+                    'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'META', 'TSLA', 'CRM', 'ORCL',
+                    'ADBE', 'NOW', 'INTU', 'AMD', 'QCOM', 'INTC', 'TXN', 'LRCX',
+                    'KLAC', 'AMAT', 'MU', 'NXPI', 'MRVL', 'ADI', 'SNPS', 'CDNS'
+                ],
+                'biotech': [
+                    'GILD', 'AMGN', 'BIIB', 'REGN', 'VRTX', 'ILMN', 'MRNA', 'BNTX',
+                    'SGEN', 'ALNY', 'BMRN', 'TECH', 'SRPT', 'RARE', 'BLUE', 'FOLD',
+                    'ARWR', 'EDIT', 'CRSP', 'NTLA', 'BEAM', 'PRME', 'VCYT', 'PACB'
+                ],
+                'energy_oil': [
+                    'XOM', 'CVX', 'COP', 'EOG', 'SLB', 'HAL', 'BKR', 'OXY',
+                    'KMI', 'WMB', 'MPC', 'VLO', 'PSX', 'HES', 'DVN', 'FANG',
+                    'APA', 'EQT', 'CNX', 'RRC', 'CLR', 'MRO', 'OVV', 'SM'
+                ],
+                'financials': [
+                    'JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'AXP', 'BLK', 'SPGI', 'ICE',
+                    'CME', 'MCO', 'TRV', 'PGR', 'ALL', 'AIG', 'MET', 'PRU', 'AFL', 'AMP',
+                    'COF', 'DFS', 'SYF', 'ALLY', 'SOFI', 'AFRM', 'UPST', 'LC'
+                ],
+                
+                # ⛏️ CRYPTO MINING & BLOCKCHAIN (No crypto, just miners/infrastructure)
+                'crypto_miners': [
+                    'MSTR', 'COIN', 'MARA', 'RIOT', 'CLSK', 'BITF', 'HUT', 'BTBT',
+                    'CAN', 'ARGO', 'EBON', 'SOS', 'ANY', 'EBANG', 'NCTY', 'PHUN',
+                    'SDIG', 'WULF', 'IREN', 'CORZ', 'CIFR', 'BTC', 'GREE', 'SPRT'
+                ],
+                
+                # 💰 DIVIDEND ARISTOCRATS & HIGH YIELD
+                'dividends': [
+                    'KO', 'PEP', 'JNJ', 'PG', 'WMT', 'MCD', 'MMM', 'CAT', 'IBM', 'VZ',
+                    'T', 'CVX', 'XOM', 'JPM', 'HD', 'LOW', 'TGT', 'COST', 'SBUX', 'NKE',
+                    'O', 'AMT', 'PLD', 'CCI', 'EQIX', 'SPG', 'AVB', 'EQR'
+                ],
+                
+                # 🎯 SPECIALTY UNIVERSES
+                'ark_stocks': [
+                    'TSLA', 'ROKU', 'SQ', 'COIN', 'HOOD', 'DNA', 'CRSP', 'EDIT', 'NTLA',
+                    'BEAM', 'PACB', 'ILMN', 'TXG', 'RBLX', 'PATH', 'U', 'DKNG', 'Z',
+                    'TWLO', 'SHOP', 'SPOT', 'ZM', 'TDOC', 'TELADOC', 'PINS', 'SNAP'
+                ],
+                'ev_future': [
+                    'TSLA', 'RIVN', 'LCID', 'NIO', 'XPEV', 'LI', 'FSR', 'GOEV', 'RIDE',
+                    'F', 'GM', 'FORD', 'TM', 'HMC', 'CHPT', 'BLNK', 'EVgo', 'PLUG',
+                    'BE', 'QS', 'STEM', 'ENPH', 'SEDG', 'RUN', 'NOVA', 'FSLR'
+                ],
+                'spacs_hot': [
+                    'SPCE', 'OPEN', 'CLOV', 'SOFI', 'HOOD', 'DKNG', 'SKLZ', 'BMBL',
+                    'COUR', 'MAPS', 'BIRD', 'UBER', 'LYFT', 'DASH', 'ABNB', 'SNOW'
+                ],
+                
+                # 📈 TRADING FOCUSED
+                'high_volume': [
+                    'SPY', 'QQQ', 'IWM', 'AAPL', 'TSLA', 'NVDA', 'AMD', 'SQQQ', 'TQQQ',
+                    'SPXU', 'SPXL', 'TNA', 'TZA', 'LABU', 'LABD', 'TECL', 'SOXL', 'SOXS',
+                    'UDOW', 'SDOW', 'FAS', 'FAZ', 'CURE', 'YINN', 'YANG', 'KWEB'
+                ],
+                'volatility': [
+                    'TSLA', 'GME', 'AMC', 'BBBY', 'MSTR', 'COIN', 'MARA', 'RIOT', 'PLTR',
+                    'SPCE', 'LCID', 'RIVN', 'NIO', 'SNAP', 'TWTR', 'NFLX', 'ZM', 'PELOTON',
+                    'UPST', 'AFRM', 'ROKU', 'SQ', 'DKNG', 'PENN', 'FUBO', 'HOOD', 'RBLX'
                 ]
             }
             

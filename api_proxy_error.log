@@ -1,0 +1,16 @@
+  File "/home/user/webapp/api_proxy.py", line 317
+    'REITS': 'O', 'AMT', 'PLD', 'CCI', 'EQIX', 'SPG', 'AVB', 'EQR'
+           ^
+SyntaxError: invalid syntax
+  File "/home/user/webapp/api_proxy.py", line 317
+    'REITS': 'O', 'AMT', 'PLD', 'CCI', 'EQIX', 'SPG', 'AVB', 'EQR'
+           ^
+SyntaxError: invalid syntax
+  File "/home/user/webapp/api_proxy.py", line 317
+    'REITS': 'O', 'AMT', 'PLD', 'CCI', 'EQIX', 'SPG', 'AVB', 'EQR'
+           ^
+SyntaxError: invalid syntax
+  File "/home/user/webapp/api_proxy.py", line 317
+    'REITS': 'O', 'AMT', 'PLD', 'CCI', 'EQIX', 'SPG', 'AVB', 'EQR'
+           ^
+SyntaxError: invalid syntax
