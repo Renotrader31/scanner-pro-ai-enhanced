@@ -357,3 +357,29 @@
 [18/Sep/2025 17:23:18] "GET / HTTP/1.1" 200 -
 [18/Sep/2025 17:23:19] code 404, message File not found
 [18/Sep/2025 17:23:19] "GET /favicon.ico HTTP/1.1" 404 -
+[18/Sep/2025 17:25:09] "GET / HTTP/1.1" 200 -
+[18/Sep/2025 17:28:03] "GET /test_bitcoin_miners.html HTTP/1.1" 200 -
+[18/Sep/2025 17:28:04] code 404, message File not found
+[18/Sep/2025 17:28:04] "GET /favicon.ico HTTP/1.1" 404 -
+[18/Sep/2025 17:47:58] "GET / HTTP/1.1" 304 -
+[18/Sep/2025 17:51:47] "GET / HTTP/1.1" 304 -
+[18/Sep/2025 17:51:48] code 404, message File not found
+[18/Sep/2025 17:51:48] "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 -
+[18/Sep/2025 17:51:48] code 404, message File not found
+[18/Sep/2025 17:51:48] "GET /apple-touch-icon.png HTTP/1.1" 404 -
+🚀 Scanner Pro AI - Starting HTTP Server...
+📡 Server: http://0.0.0.0:8000
+📁 Directory: /home/user/webapp
+🔍 Mass Scanner: Ready for 4,500+ stocks
+🧠 AI Analysis: Natural language queries supported
+📊 Live Data: Polygon API integration ready
+============================================================
+❌ Server error: [Errno 98] Address already in use
+🚀 Scanner Pro AI - Starting HTTP Server...
+📡 Server: http://0.0.0.0:8000
+📁 Directory: /home/user/webapp
+🔍 Mass Scanner: Ready for 4,500+ stocks
+🧠 AI Analysis: Natural language queries supported
+📊 Live Data: Polygon API integration ready
+============================================================
+✅ Scanner Pro AI serving at port 8000

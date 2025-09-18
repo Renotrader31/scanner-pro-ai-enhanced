@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bitcoin Miners Universe Test</title>
+    <style>
+        body { background: #1a1a2e; color: white; font-family: monospace; padding: 20px; }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .info { color: #00bfff; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Bitcoin Miners Universe Test</h1>
+    
+    <div class="test-section">
+        <h3>Step 1: Test API Endpoint</h3>
+        <div id="apiTest">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 2: Test Universe Selection Logic</h3>
+        <div id="logicTest">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 3: Simulate Enable Live Data</h3>
+        <button onclick="simulateEnableLiveData()" style="padding: 10px; background: #4CAF50; color: white; border: none;">
+            🚀 Simulate Enable Live Data + Bitcoin Miners
+        </button>
+        <div id="simulationResult"></div>
+    </div>
+
+    <script>
+        // Same API configuration as main app
+        const API_CONFIG = {
+            PROXY_BASE_URL: 'https://8001-is1pytsu7vtueafbe0oix-6532622b.e2b.dev',
+        };
+
+        // Test 1: API Endpoint
+        async function testAPI() {
+            try {
+                console.log('🔄 Testing Bitcoin Miners API...');
+                const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/bulk-quotes?universe=crypto_miners`);
+                const data = await response.json();
+                
+                const apiDiv = document.getElementById('apiTest');
+                if (data.status === 'success' && data.count > 0) {
+                    apiDiv.innerHTML = `
+                        <div class="success">✅ API Test PASSED</div>
+                        <div class="info">📊 Fetched: ${data.count}/${data.total_requested} bitcoin miners</div>
+                        <div class="info">🎯 Sample tickers: ${data.quotes.slice(0, 5).map(q => q.ticker).join(', ')}</div>
+                        <div class="info">💰 Sample prices: ${data.quotes.slice(0, 3).map(q => `${q.ticker}: $${q.price}`).join(', ')}</div>
+                    `;
+                } else {
+                    apiDiv.innerHTML = `<div class="error">❌ API Test FAILED: ${data.message || 'No data'}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('apiTest').innerHTML = `<div class="error">❌ API Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test 2: Universe Selection Logic
+        function testUniverseLogic() {
+            const logicDiv = document.getElementById('logicTest');
+            
+            // Create mock universe selector
+            const mockSelector = document.createElement('select');
+            mockSelector.id = 'universeSelector';
+            mockSelector.value = 'crypto_miners';
+            document.body.appendChild(mockSelector);
+            
+            // Test the logic from main app
+            const selectedUniverse = document.getElementById('universeSelector')?.value || 'popular';
+            const isLiveModeWithUniverse = selectedUniverse !== 'popular';
+            
+            logicDiv.innerHTML = `
+                <div class="info">🌟 Selected universe: ${selectedUniverse}</div>
+                <div class="info">🎯 Is special universe: ${isLiveModeWithUniverse}</div>
+                <div class="${isLiveModeWithUniverse ? 'success' : 'error'}">
+                    ${isLiveModeWithUniverse ? '✅ Logic Test PASSED - Should trigger Universe Mode' : '❌ Logic Test FAILED'}
+                </div>
+            `;
+        }
+
+        // Test 3: Full Simulation
+        async function simulateEnableLiveData() {
+            const resultDiv = document.getElementById('simulationResult');
+            resultDiv.innerHTML = '<div class="info">🔄 Simulating full live data process...</div>';
+            
+            try {
+                // Step 1: Fetch bitcoin miners
+                console.log('🔄 Step 1: Fetching bitcoin miners...');
+                const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/bulk-quotes?universe=crypto_miners`);
+                const data = await response.json();
+                
+                if (data.status !== 'success') {
+                    throw new Error('API fetch failed');
+                }
+                
+                // Step 2: Simulate universe mode detection
+                console.log('🔄 Step 2: Testing universe mode detection...');
+                const selectedUniverse = 'crypto_miners';
+                const isLiveModeWithUniverse = selectedUniverse !== 'popular';
+                
+                // Step 3: Simulate filtering logic
+                console.log('🔄 Step 3: Simulating filtering logic...');
+                let results = data.quotes;
+                
+                if (isLiveModeWithUniverse) {
+                    console.log('🎯 UNIVERSE MODE: Should show ALL stocks (no scan filtering)');
+                    // In universe mode - show all stocks, just basic price filter
+                    results = results.filter(stock => stock.price > 1); // Basic filter
+                } else {
+                    console.log('📊 SCAN MODE: Would apply scan type filters');
+                    // Would apply scan type filters here
+                }
+                
+                // Display results
+                resultDiv.innerHTML = `
+                    <div class="success">✅ SIMULATION COMPLETED</div>
+                    <div class="info">🎯 Universe Mode Active: ${isLiveModeWithUniverse}</div>
+                    <div class="info">📊 Total miners fetched: ${data.count}</div>
+                    <div class="info">🔍 After filtering: ${results.length} stocks</div>
+                    <div class="info">💰 Bitcoin miners that would show:</div>
+                    <div style="margin-left: 20px;">
+                        ${results.slice(0, 10).map(stock => 
+                            `<div>🔴 ${stock.ticker}: $${stock.price} (${stock.change > 0 ? '+' : ''}${stock.change.toFixed(2)}%)</div>`
+                        ).join('')}
+                    </div>
+                    <div class="success">
+                        ${results.length === data.count ? 
+                            '🎉 SUCCESS: All miners would be displayed!' : 
+                            '⚠️ Some miners were filtered out'}
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Simulation failed: ${error.message}</div>`;
+            }
+        }
+
+        // Run tests on page load
+        window.addEventListener('load', () => {
+            testAPI();
+            testUniverseLogic();
+        });
+    </script>
+</body>
+</html>

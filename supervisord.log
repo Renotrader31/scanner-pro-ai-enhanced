@@ -172,3 +172,9 @@
 2025-09-18 17:23:12,250 WARN stopped: scanner_pro_ai (terminated by SIGTERM)
 2025-09-18 17:23:12,254 INFO spawned: 'scanner_pro_ai' with pid 6868
 2025-09-18 17:23:13,342 INFO success: scanner_pro_ai entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-18 17:52:48,024 INFO waiting for scanner_pro_ai to stop
+2025-09-18 17:52:48,025 WARN stopped: scanner_pro_ai (terminated by SIGTERM)
+2025-09-18 17:52:48,029 INFO spawned: 'scanner_pro_ai' with pid 9388
+2025-09-18 17:52:48,133 WARN exited: scanner_pro_ai (exit status 1; not expected)
+2025-09-18 17:52:49,137 INFO spawned: 'scanner_pro_ai' with pid 9390
+2025-09-18 17:52:50,226 INFO success: scanner_pro_ai entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
