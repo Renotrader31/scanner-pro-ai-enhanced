@@ -324,3 +324,24 @@
 📊 Live Data: Polygon API integration ready
 ============================================================
 ✅ Scanner Pro AI serving at port 8000
+🚀 Scanner Pro AI - Starting HTTP Server...
+📡 Server: http://0.0.0.0:8000
+📁 Directory: /home/user/webapp
+🔍 Mass Scanner: Ready for 4,500+ stocks
+🧠 AI Analysis: Natural language queries supported
+📊 Live Data: Polygon API integration ready
+============================================================
+✅ Scanner Pro AI serving at port 8000
+[18/Sep/2025 16:46:06] "GET / HTTP/1.1" 200 -
+[18/Sep/2025 16:46:07] code 404, message File not found
+[18/Sep/2025 16:46:07] "GET /favicon.ico HTTP/1.1" 404 -
+[18/Sep/2025 16:46:33] "GET /test_live_data_enable.html HTTP/1.1" 200 -
+[18/Sep/2025 16:46:33] code 404, message File not found
+[18/Sep/2025 16:46:33] "GET /favicon.ico HTTP/1.1" 404 -
+[18/Sep/2025 16:51:46] "GET / HTTP/1.1" 200 -
+[18/Sep/2025 16:51:46] code 404, message File not found
+[18/Sep/2025 16:51:46] "GET /favicon.ico HTTP/1.1" 404 -
+[18/Sep/2025 16:56:21] "GET / HTTP/1.1" 200 -
+[18/Sep/2025 16:56:21] code 404, message File not found
+[18/Sep/2025 16:56:21] "GET /favicon.ico HTTP/1.1" 404 -
+[18/Sep/2025 16:58:04] "GET / HTTP/1.1" 200 -

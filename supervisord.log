@@ -143,3 +143,15 @@
 2025-09-18 15:05:13,483 WARN stopped: scanner_pro_ai (terminated by SIGTERM)
 2025-09-18 15:05:13,487 INFO spawned: 'scanner_pro_ai' with pid 42144
 2025-09-18 15:05:14,589 INFO success: scanner_pro_ai entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-18 16:44:38,604 INFO RPC interface 'supervisor' initialized
+2025-09-18 16:44:38,605 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2025-09-18 16:44:38,607 INFO daemonizing the supervisord process
+2025-09-18 16:44:38,608 INFO supervisord started with pid 1222
+2025-09-18 16:44:39,612 INFO spawned: 'api_proxy' with pid 1224
+2025-09-18 16:44:39,615 INFO spawned: 'scanner_pro_ai' with pid 1225
+2025-09-18 16:44:40,717 INFO success: api_proxy entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-18 16:44:40,717 INFO success: scanner_pro_ai entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-18 17:00:48,529 INFO waiting for api_proxy to stop
+2025-09-18 17:00:48,530 WARN stopped: api_proxy (terminated by SIGTERM)
+2025-09-18 17:00:48,534 INFO spawned: 'api_proxy' with pid 4232
+2025-09-18 17:00:49,645 INFO success: api_proxy entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

@@ -96,6 +96,12 @@
                         <button onclick="switchToLiveData()" id="liveDataBtn" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-all">
                             <i class="fas fa-wifi mr-2"></i>Enable Live Data
                         </button>
+                        <select id="universeSelector" onchange="changeUniverse()" class="px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm">
+                            <option value="popular">Popular Stocks (40+)</option>
+                            <option value="sp500_top50">S&P 500 Top 50</option>
+                            <option value="growth">Growth Stocks (24)</option>
+                            <option value="meme">Meme Stocks (16)</option>
+                        </select>
                         <button onclick="refreshLiveData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-all">
                             <i class="fas fa-sync mr-2"></i>Refresh Data
                         </button>
@@ -1101,10 +1107,10 @@
                     const testData = await testResponse.json();
                     console.log('✅ Proxy connection successful:', testData.message);
                     
-                    // Fetch real-time quotes from FMP for popular stocks (expanded list)
-                    const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX,AMD,CRM,INTC,BABA,DIS,JPM,JNJ,PFE,KO,WMT,V,MA';
-                    console.log('🚀 Fetching REAL-TIME quotes from FMP API...');
-                    const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/realtime-quotes?tickers=${tickers}`);
+                    // NEW: Use bulk universe endpoint for much larger stock coverage
+                    const selectedUniverse = document.getElementById('universeSelector')?.value || 'popular';
+                    console.log(`🚀 Fetching ${selectedUniverse.toUpperCase()} universe from FMP API...`);
+                    const response = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/bulk-quotes?universe=${selectedUniverse}`);
                     
                     if (!response.ok) {
                         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
@@ -1292,9 +1298,35 @@
 
         // Enhanced scan function that works with both mock and live data
         function refreshLiveData() {
-            console.log('🔄 Refreshing mock data...');
-            generateMassiveStockDatabase();
-            performScan();
+            if (dataManager && dataManager.isLive) {
+                console.log('🔄 Refreshing live data...');
+                dataManager.fetchLiveStockData();
+            } else {
+                console.log('🔄 Refreshing mock data...');
+                generateMassiveStockDatabase();
+                performScan();
+            }
+        }
+        
+        // New function to change live data universe
+        async function changeUniverse() {
+            if (dataManager && dataManager.isLive) {
+                const selectedUniverse = document.getElementById('universeSelector').value;
+                console.log(`🔄 Switching to ${selectedUniverse} universe...`);
+                
+                // Show loading state
+                document.getElementById('scanResults').innerHTML = `
+                    <tr>
+                        <td colspan="10" class="text-center p-8 text-gray-400">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                            Loading ${selectedUniverse} universe... Please wait.
+                        </td>
+                    </tr>
+                `;
+                
+                // Fetch new universe
+                await dataManager.fetchLiveStockData();
+            }
         }
         
         // Debug function to test live data directly

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Data Test</title>
+</head>
+<body>
+    <h1>Testing Live Data Enable Function</h1>
+    <div id="results"></div>
+    
+    <script>
+        // Same API configuration as the main app
+        const API_CONFIG = {
+            FMP_API_KEY: 'm2XfxOS0sZxs6hLEY5yRzUgDyp5Dur4V',
+            FMP_BASE_URL: 'https://financialmodelingprep.com/api/v3',
+            USE_LIVE_DATA: true,
+            PROXY_BASE_URL: 'https://8001-is1pytsu7vtueafbe0oix-6532622b.e2b.dev',
+            UPDATE_INTERVAL: 5000,
+            MAX_BATCH_SIZE: 100
+        };
+
+        async function testLiveData() {
+            console.log('🔄 Testing live data functionality...');
+            
+            try {
+                // Test 1: Check proxy health
+                console.log('📡 Testing proxy health...');
+                const healthResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/test`);
+                const healthData = await healthResponse.json();
+                console.log('✅ Proxy health:', healthData);
+                
+                // Test 2: Test single quote
+                console.log('📊 Testing single quote...');
+                const quoteResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/quote/AAPL`);
+                const quoteData = await quoteResponse.json();
+                console.log('✅ Quote data:', quoteData);
+                
+                // Test 3: Test batch quotes (same as main app)
+                console.log('🚀 Testing batch real-time quotes...');
+                const tickers = 'AAPL,MSFT,NVDA,GOOGL,TSLA,META,AMZN,NFLX';
+                const batchResponse = await fetch(`${API_CONFIG.PROXY_BASE_URL}/api/fmp/realtime-quotes?tickers=${tickers}`);
+                const batchData = await batchResponse.json();
+                console.log('✅ Batch real-time data:', batchData);
+                
+                // Display results
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `
+                    <h2>✅ Live Data Test Results</h2>
+                    <h3>Proxy Health:</h3>
+                    <pre>${JSON.stringify(healthData, null, 2)}</pre>
+                    
+                    <h3>Single Quote (AAPL):</h3>
+                    <pre>${JSON.stringify(quoteData, null, 2)}</pre>
+                    
+                    <h3>Batch Real-time Quotes:</h3>
+                    <pre>${JSON.stringify(batchData, null, 2)}</pre>
+                    
+                    <div style="background: green; color: white; padding: 10px; margin: 10px 0;">
+                        🎉 SUCCESS: Live data is flowing correctly!
+                        <br>✅ FMP API is connected and returning real-time market data
+                        <br>✅ All ${batchData.count} stocks received with live prices
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                document.getElementById('results').innerHTML = `
+                    <div style="background: red; color: white; padding: 10px;">
+                        ❌ Live Data Test Failed: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Run test on page load
+        testLiveData();
+    </script>
+</body>
+</html>

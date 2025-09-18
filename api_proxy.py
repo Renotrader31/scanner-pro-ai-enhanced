@@ -55,6 +55,10 @@ class APIProxyHandler(http.server.BaseHTTPRequestHandler):
             elif path == '/api/fmp/realtime-quotes':
                 tickers = query_params.get('tickers', ['AAPL,MSFT,NVDA,GOOGL,TSLA'])[0].split(',')
                 self._handle_fmp_realtime_quotes(tickers)
+            elif path == '/api/fmp/bulk-quotes':
+                # New bulk endpoint for large universes
+                universe = query_params.get('universe', ['popular'])[0]
+                self._handle_fmp_bulk_quotes(universe)
             else:
                 self._send_error_response(404, "Endpoint not found")
                 
@@ -226,6 +230,107 @@ class APIProxyHandler(http.server.BaseHTTPRequestHandler):
             
         except Exception as e:
             self._send_error_response(500, f"Error in FMP real-time quotes: {str(e)}")
+    
+    def _handle_fmp_bulk_quotes(self, universe):
+        """Fetch bulk real-time quotes for large stock universes"""
+        try:
+            print(f"🚀 Fetching BULK UNIVERSE: {universe}")
+            
+            # Define stock universes
+            universes = {
+                'popular': [
+                    # Mega Cap Tech
+                    'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'GOOG', 'AMZN', 'META', 'TSLA',
+                    # Large Cap Tech  
+                    'NFLX', 'AMD', 'CRM', 'INTC', 'ORCL', 'ADBE', 'CSCO', 'AVGO',
+                    # Finance
+                    'JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'AXP', 'BLK',
+                    # Healthcare
+                    'JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'TMO', 'ABT', 'DHR',
+                    # Consumer
+                    'KO', 'PEP', 'WMT', 'HD', 'MCD', 'DIS', 'NKE', 'SBUX',
+                    # Energy
+                    'XOM', 'CVX', 'COP', 'EOG', 'SLB', 'MPC', 'VLO', 'PSX'
+                ],
+                'sp500_top50': [
+                    'AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'GOOG', 'META', 'TSLA',
+                    'BRK-B', 'LLY', 'AVGO', 'JPM', 'WMT', 'V', 'UNH', 'XOM',
+                    'MA', 'PG', 'JNJ', 'HD', 'CVX', 'ABBV', 'NFLX', 'BAC',
+                    'KO', 'CRM', 'COST', 'ASML', 'MRK', 'AMD', 'PEP', 'TMO',
+                    'LIN', 'ACN', 'CSCO', 'ABT', 'ADBE', 'DHR', 'TXN', 'MCD',
+                    'VZ', 'NEE', 'ORCL', 'WFC', 'PM', 'COP', 'NVS', 'BMY',
+                    'DIS', 'INTC'
+                ],
+                'growth': [
+                    'NVDA', 'TSLA', 'AMD', 'CRM', 'SHOP', 'SQ', 'ROKU', 'ZM',
+                    'PLTR', 'SNOW', 'NET', 'DDOG', 'CRWD', 'ZS', 'OKTA', 'TWLO',
+                    'TEAM', 'DOCU', 'SPLK', 'WDAY', 'NOW', 'VEEV', 'ADSK', 'ANSS'
+                ],
+                'meme': [
+                    'GME', 'AMC', 'BBBY', 'NOK', 'BB', 'KOSS', 'EXPR', 'CLOV',
+                    'WISH', 'SOFI', 'PLTR', 'SPCE', 'NIO', 'RIVN', 'LCID', 'HOOD'
+                ]
+            }
+            
+            # Get tickers for the requested universe
+            ticker_list = universes.get(universe, universes['popular'])
+            print(f"📊 Processing {len(ticker_list)} stocks for {universe} universe")
+            
+            quotes = []
+            batch_size = 8  # Process 8 stocks per batch for stability
+            
+            # Process in batches to avoid API limits
+            for i in range(0, len(ticker_list), batch_size):
+                batch = ticker_list[i:i + batch_size]
+                print(f"🔄 Processing batch {i//batch_size + 1}: {', '.join(batch)}")
+                
+                try:
+                    # Use the efficient batch quote endpoint
+                    ticker_string = ','.join(batch)
+                    url = f"{self.FMP_BASE_URL}/quote/{ticker_string}?apikey={self.FMP_API_KEY}"
+                    
+                    with urllib.request.urlopen(url, timeout=10) as response:
+                        data = json.loads(response.read().decode())
+                    
+                    if data and isinstance(data, list):
+                        for quote in data:
+                            quotes.append({
+                                "ticker": quote.get('symbol', ''),
+                                "price": quote.get('price', 0),
+                                "change": quote.get('changesPercentage', 0),
+                                "change_amount": quote.get('change', 0),
+                                "volume": quote.get('volume', 0),
+                                "market_cap": quote.get('marketCap', 0),
+                                "pe": quote.get('pe', None),
+                                "day_low": quote.get('dayLow', 0),
+                                "day_high": quote.get('dayHigh', 0),
+                                "timestamp": int(time.time()),
+                                "is_real_time": True,
+                                "universe": universe
+                            })
+                
+                except Exception as batch_error:
+                    print(f"⚠️ Batch error for {', '.join(batch)}: {batch_error}")
+                    continue
+                
+                # Small delay between batches to be API-friendly
+                time.sleep(0.2)
+            
+            print(f"✅ Successfully fetched {len(quotes)} quotes from {universe} universe")
+            
+            response_data = {
+                "status": "success",
+                "universe": universe,
+                "count": len(quotes),
+                "total_requested": len(ticker_list),
+                "quotes": quotes,
+                "provider": "FMP Bulk Real-time",
+                "fetch_time": time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())
+            }
+            self._send_json_response(response_data)
+            
+        except Exception as e:
+            self._send_error_response(500, f"Error in FMP bulk quotes: {str(e)}")
     
     def _send_json_response(self, data):
         """Send JSON response with proper headers"""
