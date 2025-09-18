@@ -488,3 +488,102 @@
 🔄 Processing batch 4: NOVA, FSLR
 ✅ Successfully fetched 26 quotes from ev_future universe
 [18/Sep/2025 17:14:17] "GET /api/fmp/bulk-quotes?universe=ev_future HTTP/1.1" 200 -
+✅ Response sent: 8758 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:16:14] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: popular
+📊 Processing 48 stocks for popular universe
+🔄 Processing batch 1: AAPL, MSFT, NVDA, GOOGL, GOOG, AMZN, META, TSLA
+🔄 Processing batch 2: NFLX, AMD, CRM, INTC, ORCL, ADBE, CSCO, AVGO
+🔄 Processing batch 3: JPM, BAC, WFC, GS, MS, C, AXP, BLK
+🔄 Processing batch 4: JNJ, PFE, UNH, ABBV, MRK, TMO, ABT, DHR
+🔄 Processing batch 5: KO, PEP, WMT, HD, MCD, DIS, NKE, SBUX
+🔄 Processing batch 6: XOM, CVX, COP, EOG, SLB, MPC, VLO, PSX
+✅ Successfully fetched 48 quotes from popular universe
+[18/Sep/2025 17:16:16] "GET /api/fmp/bulk-quotes?universe=popular HTTP/1.1" 200 -
+✅ Response sent: 16077 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:16:31] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: crypto_miners
+📊 Processing 24 stocks for crypto_miners universe
+🔄 Processing batch 1: MSTR, COIN, MARA, RIOT, CLSK, BITF, HUT, BTBT
+🔄 Processing batch 2: CAN, ARGO, EBON, SOS, ANY, EBANG, NCTY, PHUN
+🔄 Processing batch 3: SDIG, WULF, IREN, CORZ, CIFR, BTC, GREE, SPRT
+✅ Successfully fetched 23 quotes from crypto_miners universe
+[18/Sep/2025 17:16:32] "GET /api/fmp/bulk-quotes?universe=crypto_miners HTTP/1.1" 200 -
+✅ Response sent: 7810 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:17:09] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: sp500_top50
+📊 Processing 50 stocks for sp500_top50 universe
+🔄 Processing batch 1: AAPL, MSFT, NVDA, AMZN, GOOGL, GOOG, META, TSLA
+🔄 Processing batch 2: BRK-B, LLY, AVGO, JPM, WMT, V, UNH, XOM
+🔄 Processing batch 3: MA, PG, JNJ, HD, CVX, ABBV, NFLX, BAC
+🔄 Processing batch 4: KO, CRM, COST, ASML, MRK, AMD, PEP, TMO
+🔄 Processing batch 5: LIN, ACN, CSCO, ABT, ADBE, DHR, TXN, MCD
+🔄 Processing batch 6: VZ, NEE, ORCL, WFC, PM, COP, NVS, BMY
+🔄 Processing batch 7: DIS, INTC
+✅ Successfully fetched 50 quotes from sp500_top50 universe
+[18/Sep/2025 17:17:14] "GET /api/fmp/bulk-quotes?universe=sp500_top50 HTTP/1.1" 200 -
+✅ Response sent: 16951 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:18:03] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: crypto_miners
+📊 Processing 24 stocks for crypto_miners universe
+🔄 Processing batch 1: MSTR, COIN, MARA, RIOT, CLSK, BITF, HUT, BTBT
+🔄 Processing batch 2: CAN, ARGO, EBON, SOS, ANY, EBANG, NCTY, PHUN
+🔄 Processing batch 3: SDIG, WULF, IREN, CORZ, CIFR, BTC, GREE, SPRT
+✅ Successfully fetched 23 quotes from crypto_miners universe
+[18/Sep/2025 17:18:04] "GET /api/fmp/bulk-quotes?universe=crypto_miners HTTP/1.1" 200 -
+✅ Response sent: 7830 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:19:53] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: tech_pure
+📊 Processing 24 stocks for tech_pure universe
+🔄 Processing batch 1: AAPL, MSFT, NVDA, GOOGL, META, TSLA, CRM, ORCL
+🔄 Processing batch 2: ADBE, NOW, INTU, AMD, QCOM, INTC, TXN, LRCX
+🔄 Processing batch 3: KLAC, AMAT, MU, NXPI, MRVL, ADI, SNPS, CDNS
+✅ Successfully fetched 24 quotes from tech_pure universe
+[18/Sep/2025 17:19:56] "GET /api/fmp/bulk-quotes?universe=tech_pure HTTP/1.1" 200 -
+✅ Response sent: 8213 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:20:13] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: meme
+📊 Processing 16 stocks for meme universe
+🔄 Processing batch 1: GME, AMC, BBBY, NOK, BB, KOSS, EXPR, CLOV
+🔄 Processing batch 2: WISH, SOFI, PLTR, SPCE, NIO, RIVN, LCID, HOOD
+✅ Successfully fetched 16 quotes from meme universe
+[18/Sep/2025 17:20:15] "GET /api/fmp/bulk-quotes?universe=meme HTTP/1.1" 200 -
+✅ Response sent: 5370 bytes
+📡 Proxy request: /api/test
+[18/Sep/2025 17:20:43] "GET /api/test HTTP/1.1" 200 -
+✅ Response sent: 334 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: crypto_miners
+📊 Processing 24 stocks for crypto_miners universe
+🔄 Processing batch 1: MSTR, COIN, MARA, RIOT, CLSK, BITF, HUT, BTBT
+🔄 Processing batch 2: CAN, ARGO, EBON, SOS, ANY, EBANG, NCTY, PHUN
+🔄 Processing batch 3: SDIG, WULF, IREN, CORZ, CIFR, BTC, GREE, SPRT
+✅ Successfully fetched 23 quotes from crypto_miners universe
+[18/Sep/2025 17:20:45] "GET /api/fmp/bulk-quotes?universe=crypto_miners HTTP/1.1" 200 -
+✅ Response sent: 7819 bytes
+📡 Proxy request: /api/fmp/bulk-quotes
+🚀 Fetching BULK UNIVERSE: crypto_miners
+📊 Processing 24 stocks for crypto_miners universe
+🔄 Processing batch 1: MSTR, COIN, MARA, RIOT, CLSK, BITF, HUT, BTBT
+🔄 Processing batch 2: CAN, ARGO, EBON, SOS, ANY, EBANG, NCTY, PHUN
+🔄 Processing batch 3: SDIG, WULF, IREN, CORZ, CIFR, BTC, GREE, SPRT
+✅ Successfully fetched 23 quotes from crypto_miners universe
+[18/Sep/2025 17:22:19] "GET /api/fmp/bulk-quotes?universe=crypto_miners HTTP/1.1" 200 -

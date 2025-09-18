@@ -168,3 +168,7 @@
 2025-09-18 17:13:21,852 INFO gave up: api_proxy entered FATAL state, too many start retries too quickly
 2025-09-18 17:13:29,059 INFO spawned: 'api_proxy' with pid 5808
 2025-09-18 17:13:30,156 INFO success: api_proxy entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-18 17:23:12,249 INFO waiting for scanner_pro_ai to stop
+2025-09-18 17:23:12,250 WARN stopped: scanner_pro_ai (terminated by SIGTERM)
+2025-09-18 17:23:12,254 INFO spawned: 'scanner_pro_ai' with pid 6868
+2025-09-18 17:23:13,342 INFO success: scanner_pro_ai entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

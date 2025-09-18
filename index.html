@@ -1543,11 +1543,18 @@
 
             // **LIVE DATA INTEGRATION** - Choose data source based on live data status
             let sourceStocks = mockStocks;
+            let isLiveModeWithUniverse = false;
+            
             if (dataManager && dataManager.isLive) {
                 console.log('🚀 LIVE MODE: Using live data stocks only');
                 // Filter to show only stocks that have been updated with live data (have timestamp)
                 sourceStocks = mockStocks.filter(stock => stock.timestamp);
                 console.log(`📊 Live stocks available: ${sourceStocks.length}`);
+                
+                // Check if we're showing a specific universe (not just "popular")
+                const selectedUniverse = document.getElementById('universeSelector')?.value || 'popular';
+                isLiveModeWithUniverse = selectedUniverse !== 'popular';
+                console.log(`🌟 Selected universe: ${selectedUniverse}, isSpecialUniverse: ${isLiveModeWithUniverse}`);
                 
                 // If no live stocks available yet, show message and return
                 if (sourceStocks.length === 0) {
@@ -1570,8 +1577,22 @@
                 console.log('🟡 DEMO MODE: Using mock database');
             }
 
-            // Apply filters to source stocks
-            let results = sourceStocks.filter(stock => {
+            // **UNIVERSE MODE**: When showing specific universe, show ALL stocks from that universe
+            let results;
+            if (isLiveModeWithUniverse) {
+                console.log('🎯 UNIVERSE MODE: Showing ALL live stocks from selected universe (ignoring scan filters)');
+                // In universe mode, show ALL live stocks, just apply basic price/volume filters
+                results = sourceStocks.filter(stock => {
+                    // Only apply basic filters, not scan type filters
+                    if (stock.price < minPrice || stock.price > maxPrice) return false;
+                    if (parseFloat(stock.volume.replace(/[^0-9.]/g, '')) * 1000000 < minVolume) return false;
+                    return true;
+                });
+                console.log(`🌟 Universe results (no scan filters): ${results.length} stocks`);
+            } else {
+                console.log('📊 SCAN MODE: Applying scan type filters');
+                // Normal scan mode - apply all filters including scan type
+                results = sourceStocks.filter(stock => {
                 // Basic filters
                 if (stock.price < minPrice || stock.price > maxPrice) return false;
                 if (parseFloat(stock.volume.replace(/[^0-9.]/g, '')) * 1000000 < minVolume) return false;
@@ -1608,11 +1629,18 @@
                 return true;
             });
 
-            // Apply scan type specific filters
-            results = applyScanTypeFilter(results, scanType);
+                // Apply scan type specific filters for normal scan mode
+                results = applyScanTypeFilter(results, scanType);
+                console.log(`📊 After scan type filter (${scanType}): ${results.length} stocks`);
+            }
             
-            // Sort results by scan type logic
-            results = sortByScanType(results, scanType);
+            // Sort results - in universe mode, sort by change% by default, otherwise by scan type
+            if (isLiveModeWithUniverse) {
+                console.log('🌟 Sorting universe results by change% (descending)');
+                results = results.sort((a, b) => b.change - a.change);
+            } else {
+                results = sortByScanType(results, scanType);
+            }
             
             currentResults = results;
             filteredResults = [...results];
@@ -1620,6 +1648,14 @@
             
             updateResultsDisplay();
             updateScanSummary(results);
+            
+            // Update UI to show current mode
+            if (isLiveModeWithUniverse) {
+                const selectedUniverse = document.getElementById('universeSelector')?.value || 'unknown';
+                console.log(`✅ UNIVERSE MODE: Displaying ${results.length} live stocks from ${selectedUniverse} universe`);
+            } else {
+                console.log(`✅ SCAN MODE: Displaying ${results.length} stocks matching ${scanType} criteria`);
+            }
         }
 
         function parseMarketCap(capString) {
